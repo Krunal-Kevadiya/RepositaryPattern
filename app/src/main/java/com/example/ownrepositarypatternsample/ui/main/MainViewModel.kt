@@ -12,9 +12,8 @@ import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.repository.DiscoverRepository
 import com.example.ownrepositarypatternsample.data.repository.PeopleRepository
 import timber.log.Timber
-import javax.inject.Inject
 
-class MainViewModel @Inject constructor(
+class MainViewModel(
     private val discoverRepository: DiscoverRepository,
     private val peopleRepository: PeopleRepository
 ) : BaseViewModel() {

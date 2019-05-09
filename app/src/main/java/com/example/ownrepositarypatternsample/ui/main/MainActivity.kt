@@ -1,12 +1,17 @@
 package com.example.ownrepositarypatternsample.ui.main
 
 import android.os.Bundle
+import androidx.lifecycle.ViewModel
 import com.example.ownrepositarypatternsample.MainBinding
 import com.example.ownrepositarypatternsample.R
-import com.example.ownrepositarypatternsample.base.InjectActivity
+import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.utils.MainNavigationUtil
+import org.koin.androidx.scope.currentScope
+import kotlin.reflect.KClass
 
-class MainActivity : InjectActivity<MainBinding, MainViewModel>() {
+class MainActivity : BaseActivity<MainBinding, MainViewModel>() {
+    override var mViewModel: ViewModel by currentScope.get(KClass<MainViewModel::class>)
+
     override fun getLayoutId(): Int = R.layout.activity_main
 
     override fun initObserve() {

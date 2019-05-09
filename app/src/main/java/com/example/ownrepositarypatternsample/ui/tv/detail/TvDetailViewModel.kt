@@ -11,12 +11,10 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Revi
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.repository.TvRepository
 import timber.log.Timber
-import javax.inject.Inject
 
-class TvDetailViewModel @Inject constructor(
+class TvDetailViewModel(
     private val repository: TvRepository
 ) : BaseViewModel() {
-
     private val keywordIdLiveData: MutableLiveData<Int> = MutableLiveData()
     private val keywordListLiveData: LiveData<Resource<List<Keyword>>>
 

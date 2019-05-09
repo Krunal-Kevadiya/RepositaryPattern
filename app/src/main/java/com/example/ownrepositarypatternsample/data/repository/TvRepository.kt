@@ -18,12 +18,11 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Revi
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.remote.service.TvService
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class TvRepository @Inject
-constructor(val service: TvService, val tvDao: TvDao): Repository {
+class TvRepository constructor(
+    val service: TvService,
+    val tvDao: TvDao
+): Repository {
 
     init {
         Timber.d("Injection TvRepository")

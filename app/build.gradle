@@ -19,20 +19,23 @@ def getProperty(String filename, String propName) {
 }
 
 android {
-    compileSdkVersion rootProject.compileSdkVersion
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.ownrepositarypatternsample"
-        minSdkVersion rootProject.minSdkVersion
-        targetSdkVersion rootProject.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
     }
-    kapt {
-        correctErrorTypes = true
-    }
+
     dataBinding {
         enabled = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     buildTypes {
@@ -50,49 +53,49 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     // support library
-    implementation "androidx.appcompat:appcompat:$accompatVersion"
-    implementation "com.google.android.material:material:$materialVersion"
-    implementation "androidx.palette:palette:$androidxVersion"
-    implementation "androidx.cardview:cardview:$androidxVersion"
-    implementation "androidx.recyclerview:recyclerview:$androidxVersion"
+    implementation "androidx.appcompat:appcompat:1.0.2"
+    implementation "com.google.android.material:material:1.1.0-alpha06"
+    implementation "androidx.palette:palette:1.0.0"
+    implementation "androidx.cardview:cardview:1.0.0"
+    implementation "androidx.recyclerview:recyclerview:1.0.0"
 
     // kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    implementation "org.jetbrains.anko:anko:$ankoVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.21"
+    implementation "org.jetbrains.anko:anko:0.10.1"
 
     // architecture components
-    implementation "androidx.lifecycle:lifecycle-extensions:$archCompomentVersion"
-    implementation "androidx.room:room-runtime:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+    implementation "androidx.room:room-runtime:2.1.0-beta01"
+    kapt "androidx.room:room-compiler:2.1.0-beta01"
 
     // dependency injection
-    implementation "com.google.dagger:dagger:$daggerVersion"
-    //implementation "com.google.dagger:dagger-android:$daggerVersion"
-    implementation "com.google.dagger:dagger-android-support:$daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
-    kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
+    implementation "org.koin:koin-android-architecture:0.9.1"
+    implementation "org.koin:koin-android:2.0.0-GA"
+    implementation "org.koin:koin-androidx-scope:2.0.0-GA"
+    implementation "org.koin:koin-androidx-viewmodel:2.0.0-GA"
 
     // network
-    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
-    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
-    implementation "com.google.code.gson:gson:$retrofitVersion"
+    implementation "com.squareup.retrofit2:retrofit:2.5.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.5.0"
+    implementation "com.google.code.gson:gson:2.8.5"
+    implementation "com.squareup.okhttp3:okhttp:3.14.1"
+    implementation "com.squareup.okhttp3:logging-interceptor:3.14.1"
 
     // glide
-    implementation "com.github.bumptech.glide:glide:$glideVersion"
-    implementation "com.github.florent37:glidepalette:$glidePaletteVersion"
-    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+    implementation "com.github.bumptech.glide:glide:4.9.0"
+    implementation "com.github.florent37:glidepalette:2.1.2"
+    kapt "com.github.bumptech.glide:compiler:4.9.0"
 
     // adapter
-    implementation "com.github.skydoves:baserecyclerviewadapter:$baseAdapterVersion"
+    implementation "com.github.skydoves:baserecyclerviewadapter:0.1.1"
 
     // debugging
-    implementation "com.jakewharton.timber:timber:$timberVersion"
-    implementation "com.facebook.stetho:stetho:$stethoVersion"
-    implementation "com.facebook.stetho:stetho-okhttp3:$stethoVersion"
+    implementation "com.jakewharton.timber:timber:4.7.1"
+    implementation "com.facebook.stetho:stetho:1.5.0"
+    implementation "com.facebook.stetho:stetho-okhttp3:1.5.0"
 
     // custom view
-    implementation "devlight.io:navigationtabbar:$navigationBarVersion"
-    implementation "co.lujun:androidtagview:$androidTagViewVersion"
-    implementation "com.ms-square:expandableTextView:$expandableTextViewVersion"
+    implementation "devlight.io:navigationtabbar:1.2.5"
+    implementation "co.lujun:androidtagview:1.1.4"
+    implementation "com.ms-square:expandableTextView:0.1.4"
 }

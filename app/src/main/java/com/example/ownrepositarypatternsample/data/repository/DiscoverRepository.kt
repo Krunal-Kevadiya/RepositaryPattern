@@ -15,12 +15,12 @@ import com.example.ownrepositarypatternsample.data.remote.response.DiscoverMovie
 import com.example.ownrepositarypatternsample.data.remote.response.DiscoverTvResponse
 import com.example.ownrepositarypatternsample.data.remote.service.TheDiscoverService
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class DiscoverRepository @Inject
-constructor(val discoverService: TheDiscoverService, val movieDao: MovieDao, val tvDao: TvDao) : Repository {
+class DiscoverRepository constructor(
+    val discoverService: TheDiscoverService,
+    val movieDao: MovieDao,
+    val tvDao: TvDao
+) : Repository {
 
     init {
         Timber.d("Injection DiscoverRepository")

@@ -14,12 +14,11 @@ import com.example.ownrepositarypatternsample.data.remote.response.PeopleRespons
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.data.remote.service.PeopleService
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PeopleRepository @Inject
-constructor(val peopleService: PeopleService, val peopleDao: PeopleDao) : Repository {
+class PeopleRepository constructor(
+    val peopleService: PeopleService,
+    val peopleDao: PeopleDao
+) : Repository {
 
     init {
         Timber.d("Injection PeopleRepository")

@@ -18,12 +18,11 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Revi
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.remote.service.MovieService
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class MovieRepository @Inject
-constructor(val service: MovieService, val movieDao: MovieDao): Repository {
+class MovieRepository constructor(
+    val service: MovieService,
+    val movieDao: MovieDao
+): Repository {
 
     init {
         Timber.d("Injection MovieRepository")

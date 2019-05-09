@@ -9,15 +9,12 @@ import androidx.annotation.LayoutRes
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.example.ownrepositarypatternsample.BR
-import java.lang.reflect.ParameterizedType
 
-abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFragment(), InjectFactory {
-    lateinit var mBinding: VDB
-    lateinit var mViewModel: BVM
-    lateinit var mContext: Context
+abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFragment() {
+    protected lateinit var mBinding: VDB
+    protected lateinit var mViewModel: BVM
+    protected lateinit var mContext: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,11 +34,6 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFr
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mViewModel = if (initFactory() != null) {
-            ViewModelProviders.of(this, initFactory()).get(getViewModelClass())
-        } else {
-            ViewModelProviders.of(this).get(getViewModelClass())
-        }
         mBinding.setVariable(BR.viewModel, mViewModel)
         mBinding.executePendingBindings()
         initObserve()
@@ -71,14 +63,7 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFr
         return mActivity
     }
 
-    private fun getViewModelClass(): Class<BVM> {
-        val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[1]
-        return type as Class<BVM>
-    }
-
     @LayoutRes
     abstract fun getLayoutId(): Int
-    abstract fun initObserve()
-
-    override fun initFactory(): ViewModelProvider.Factory? = null
+    open fun initObserve() {}
 }

@@ -3,19 +3,16 @@ package com.example.ownrepositarypatternsample.ui.person.detail
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
 import com.example.ownrepositarypatternsample.base.AbsentLiveData
 import com.example.ownrepositarypatternsample.base.BaseViewModel
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.data.repository.PeopleRepository
 import timber.log.Timber
-import javax.inject.Inject
 
-class PersonDetailViewModel @Inject constructor(
+class PersonDetailViewModel(
     private val repository: PeopleRepository
 ) : BaseViewModel() {
-
     private val personIdLiveData: MutableLiveData<Int> = MutableLiveData()
     private val personLiveData: LiveData<Resource<PersonDetail>>
 

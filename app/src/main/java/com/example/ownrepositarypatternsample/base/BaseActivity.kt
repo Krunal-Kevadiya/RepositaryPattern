@@ -7,39 +7,26 @@ import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.example.ownrepositarypatternsample.BR
-import dagger.Provides
-import java.lang.reflect.ParameterizedType
+import org.koin.androidx.scope.currentScope
+import org.koin.core.qualifier.named
+import kotlin.reflect.KClass
 
-abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel> : AppCompatActivity(), InjectFactory {
-    lateinit var mBinding: VDB
-    lateinit var mViewModel: BVM
-    lateinit var mContext: Context
+abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel>(val clazz : KClass<BVM>): AppCompatActivity() {
+    protected lateinit var mBinding: VDB
+    protected lateinit var mContext: Context
+    protected val mViewModel: BVM by currentScope.inject(named(""), clazz, null)
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mContext = this
         mBinding = DataBindingUtil.setContentView(this, getLayoutId())
-        mViewModel = if (initFactory() != null) {
-            ViewModelProviders.of(this, initFactory()).get(getViewModelClass())
-        } else {
-            ViewModelProviders.of(this).get(getViewModelClass())
-        }
         mBinding.setVariable(BR.viewModel, mViewModel)
         mBinding.executePendingBindings()
         initObserve()
     }
 
-    private fun getViewModelClass(): Class<BVM> {
-        val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[1]
-        return type as Class<BVM>
-    }
-
     @LayoutRes
     abstract fun getLayoutId(): Int
-    abstract fun initObserve()
-
-    override fun initFactory(): ViewModelProvider.Factory? = null
+    open fun initObserve() {}
 }

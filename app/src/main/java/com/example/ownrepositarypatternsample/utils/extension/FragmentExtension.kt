@@ -13,7 +13,7 @@ fun Fragment.toast(msg: String) {
     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
 }
 
-inline fun <reified T: Activity> Fragment.startActivity(vararg params: Pair<String, Any>) {
+inline fun <reified T: Activity> Fragment.startActivitys(vararg params: Pair<String, Any>) {
     internalStartActivity(context!!, T::class.java, params)
 }
 

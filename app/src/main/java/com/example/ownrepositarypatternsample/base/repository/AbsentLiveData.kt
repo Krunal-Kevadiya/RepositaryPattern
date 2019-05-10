@@ -1,4 +1,4 @@
-package com.example.ownrepositarypatternsample.base
+package com.example.ownrepositarypatternsample.base.repository
 
 import androidx.lifecycle.LiveData
 

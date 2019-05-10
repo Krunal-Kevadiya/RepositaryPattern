@@ -1,6 +1,6 @@
 package com.example.ownrepositarypatternsample.data.remote.response
 
-import com.example.ownrepositarypatternsample.base.NetworkResponseModel
+import com.example.ownrepositarypatternsample.base.repository.NetworkResponseModel
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
 
 data class DiscoverMovieResponse(

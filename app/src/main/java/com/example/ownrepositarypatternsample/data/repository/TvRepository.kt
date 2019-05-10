@@ -2,8 +2,8 @@ package com.example.ownrepositarypatternsample.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.ownrepositarypatternsample.base.NetworkBoundRepository
-import com.example.ownrepositarypatternsample.base.Repository
+import com.example.ownrepositarypatternsample.base.repository.NetworkBoundRepository
+import com.example.ownrepositarypatternsample.base.repository.Repository
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.data.local.dao.TvDao
 import com.example.ownrepositarypatternsample.data.mappers.KeywordResponseMapper

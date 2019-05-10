@@ -16,15 +16,21 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.ownrepositarypatternsample.PersonDetailBinding
 import com.example.ownrepositarypatternsample.R
+import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Person
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.utils.extension.checkIsMaterialVersion
+import com.example.ownrepositarypatternsample.utils.extension.currentScope
+import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
+import com.example.ownrepositarypatternsample.utils.extension.visible
 import org.jetbrains.anko.startActivityForResult
+import org.jetbrains.anko.toast
 
-class PersonDetailActivity : InjectActivity<PersonDetailBinding, PersonDetailViewModel>() {
+class PersonDetailActivity : BaseActivity<PersonDetailBinding, PersonDetailViewModel>() {
+    override val mViewModel: PersonDetailViewModel by currentScope<PersonDetailActivity>().inject()
 
     override fun getLayoutId(): Int = R.layout.activity_person_detail
 

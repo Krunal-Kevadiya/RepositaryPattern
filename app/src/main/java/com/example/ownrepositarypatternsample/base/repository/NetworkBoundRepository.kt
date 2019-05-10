@@ -1,9 +1,10 @@
-package com.example.ownrepositarypatternsample.base
+package com.example.ownrepositarypatternsample.base.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.data.remote.pojo.ApiResponse
 import timber.log.Timber
 
@@ -45,7 +46,12 @@ abstract class NetworkBoundRepository<ResultType, RequestType : NetworkResponseM
                             val loaded = loadFromDb()
                             result.addSource(loaded) { newData ->
                                 newData?.let {
-                                    setValue(Resource.success(newData, mapper().onLastPage(response.body)))
+                                    setValue(
+                                        Resource.success(
+                                            newData,
+                                            mapper().onLastPage(response.body)
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -54,7 +60,12 @@ abstract class NetworkBoundRepository<ResultType, RequestType : NetworkResponseM
                         onFetchFailed(response.message)
                         response.message?.let {
                             result.addSource<ResultType>(loadedFromDB) { newData ->
-                                setValue(Resource.error(it, newData))
+                                setValue(
+                                    Resource.error(
+                                        it,
+                                        newData
+                                    )
+                                )
                             }
                         }
                     }

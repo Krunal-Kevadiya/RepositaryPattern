@@ -5,14 +5,22 @@ import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.ownrepositarypatternsample.PersonListBinding
 import com.example.ownrepositarypatternsample.R
+import com.example.ownrepositarypatternsample.base.BaseFragment
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.person.detail.PersonDetailActivity
+import com.example.ownrepositarypatternsample.utils.extension.currentScope
+import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
+import com.example.ownrepositarypatternsample.utils.extension.startActivitys
+import com.example.ownrepositarypatternsample.utils.extension.toast
 import com.skydoves.baserecyclerviewadapter.RecyclerViewPaginator
 
-class PersonListFragment: InjectFragment<PersonListBinding, MainViewModel>(), PeopleViewHolder.Delegate {
+class PersonListFragment: BaseFragment<PersonListBinding, MainViewModel>(), PeopleViewHolder.Delegate {
+    override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
+
     private val adapter = PeopleAdapter(this)
     private lateinit var paginator: RecyclerViewPaginator
 
@@ -53,6 +61,6 @@ class PersonListFragment: InjectFragment<PersonListBinding, MainViewModel>(), Pe
     override fun onItemClick(person: Person, view: View) {
         activity?.let {
             PersonDetailActivity.startActivity(this, it, person, view)
-        } ?: startActivity<PersonDetailActivity>("person" to person)
+        } ?: startActivitys<PersonDetailActivity>("person" to person)
     }
 }

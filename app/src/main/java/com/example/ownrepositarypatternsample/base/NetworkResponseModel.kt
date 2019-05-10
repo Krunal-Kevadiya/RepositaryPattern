@@ -1,3 +1,0 @@
-package com.example.ownrepositarypatternsample.base
-
-interface NetworkResponseModel

@@ -8,14 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import com.example.ownrepositarypatternsample.BR
-import org.koin.androidx.scope.currentScope
-import org.koin.core.qualifier.named
-import kotlin.reflect.KClass
 
-abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel>(val clazz : KClass<BVM>): AppCompatActivity() {
+abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel>: AppCompatActivity() {
     protected lateinit var mBinding: VDB
+    protected abstract val mViewModel: BVM
     protected lateinit var mContext: Context
-    protected val mViewModel: BVM by currentScope.inject(named(""), clazz, null)
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

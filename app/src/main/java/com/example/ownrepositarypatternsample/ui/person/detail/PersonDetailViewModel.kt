@@ -3,7 +3,7 @@ package com.example.ownrepositarypatternsample.ui.person.detail
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import com.example.ownrepositarypatternsample.base.AbsentLiveData
+import com.example.ownrepositarypatternsample.base.repository.AbsentLiveData
 import com.example.ownrepositarypatternsample.base.BaseViewModel
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail

@@ -19,7 +19,7 @@ object MainNavigationUtil {
                         .title("movie")
                         .build()
         )
-        /*models.add(
+        models.add(
                 NavigationTabBar.Model.Builder(
                         ContextCompat.getDrawable(context, R.drawable.ic_live_tv_white_24dp),
                         Color.parseColor(colors[1]))
@@ -32,7 +32,7 @@ object MainNavigationUtil {
                         Color.parseColor(colors[2]))
                         .title(context.getString(R.string.menu_star))
                         .build()
-        )*/
+        )
         return models
     }
 

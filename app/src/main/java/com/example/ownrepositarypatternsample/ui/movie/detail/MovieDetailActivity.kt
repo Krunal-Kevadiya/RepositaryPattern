@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.MovieDetailBinding
 import com.example.ownrepositarypatternsample.R
+import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.Api
@@ -16,8 +17,11 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyw
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.utils.KeywordListMapper
+import com.example.ownrepositarypatternsample.utils.extension.*
+import org.jetbrains.anko.toast
 
-class MovieDetailActivity : InjectActivity<MovieDetailBinding, MovieDetailViewModel>(), VideoListViewHolder.Delegate {
+class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewModel>(), VideoListViewHolder.Delegate {
+    override val mViewModel: MovieDetailViewModel by currentScope<MovieDetailActivity>().inject()
     private val videoAdapter by lazy { VideoListAdapter(this) }
     private val reviewAdapter by lazy { ReviewListAdapter() }
 

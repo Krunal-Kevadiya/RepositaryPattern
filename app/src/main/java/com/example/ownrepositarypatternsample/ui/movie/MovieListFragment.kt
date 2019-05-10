@@ -5,15 +5,22 @@ import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.ownrepositarypatternsample.MovieListBinding
 import com.example.ownrepositarypatternsample.R
+import com.example.ownrepositarypatternsample.base.BaseFragment
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
+import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.movie.detail.MovieDetailActivity
 import com.example.ownrepositarypatternsample.utils.PaginatorList
+import com.example.ownrepositarypatternsample.utils.extension.currentScope
+import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
+import com.example.ownrepositarypatternsample.utils.extension.startActivitys
+import com.example.ownrepositarypatternsample.utils.extension.toast
 import timber.log.Timber
 
-class MovieListFragment : InjectFragment<MovieListBinding, MainViewModel>(), MovieListViewHolder.Delegate {
+class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), MovieListViewHolder.Delegate {
+    override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
     private val adapter = MovieListAdapter(this)
     private var paginator: PaginatorList? = null
 
@@ -61,6 +68,6 @@ class MovieListFragment : InjectFragment<MovieListBinding, MainViewModel>(), Mov
     }
 
     override fun onItemClick(movie: Movie) {
-        startActivity<MovieDetailActivity>("movie" to movie)
+        startActivitys<MovieDetailActivity>("movie" to movie)
     }
 }

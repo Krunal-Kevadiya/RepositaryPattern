@@ -13,7 +13,7 @@ import com.example.ownrepositarypatternsample.BR
 
 abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFragment() {
     protected lateinit var mBinding: VDB
-    protected lateinit var mViewModel: BVM
+    protected abstract val mViewModel: BVM
     protected lateinit var mContext: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -8,7 +8,6 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-
 interface PeopleService {
     @GET("/3/person/popular?language=en")
     fun fetchPopularPeople(@Query("page") page: Int): LiveData<ApiResponse<PeopleResponse>>

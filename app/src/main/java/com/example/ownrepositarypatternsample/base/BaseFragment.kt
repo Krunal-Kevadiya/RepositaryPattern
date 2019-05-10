@@ -13,7 +13,7 @@ import com.example.ownrepositarypatternsample.BR
 
 abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragment() {
     protected lateinit var mBinding: VDB
-    protected lateinit var mViewModel: BVM
+    protected abstract val mViewModel: BVM
     protected lateinit var mContext: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {

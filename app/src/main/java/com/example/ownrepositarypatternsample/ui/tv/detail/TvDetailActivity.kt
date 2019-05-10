@@ -8,6 +8,7 @@ import android.view.MenuItem
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.TvDetailBinding
+import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.Api
@@ -19,8 +20,12 @@ import com.example.ownrepositarypatternsample.ui.movie.detail.ReviewListAdapter
 import com.example.ownrepositarypatternsample.ui.movie.detail.VideoListAdapter
 import com.example.ownrepositarypatternsample.ui.movie.detail.VideoListViewHolder
 import com.example.ownrepositarypatternsample.utils.KeywordListMapper
+import com.example.ownrepositarypatternsample.utils.extension.*
+import org.jetbrains.anko.toast
 
-class TvDetailActivity : InjectActivity<TvDetailBinding, TvDetailViewModel>(), VideoListViewHolder.Delegate {
+class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), VideoListViewHolder.Delegate {
+    override val mViewModel: TvDetailViewModel by currentScope<TvDetailActivity>().inject()
+
     private val videoAdapter by lazy { VideoListAdapter(this) }
     private val reviewAdapter by lazy { ReviewListAdapter() }
 

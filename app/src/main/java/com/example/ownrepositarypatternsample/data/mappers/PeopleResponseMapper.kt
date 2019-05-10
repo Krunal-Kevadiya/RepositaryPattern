@@ -1,6 +1,6 @@
 package com.example.ownrepositarypatternsample.data.mappers
 
-import com.example.ownrepositarypatternsample.base.NetworkResponseMapper
+import com.example.ownrepositarypatternsample.base.repository.NetworkResponseMapper
 import com.example.ownrepositarypatternsample.data.remote.response.PeopleResponse
 import timber.log.Timber
 

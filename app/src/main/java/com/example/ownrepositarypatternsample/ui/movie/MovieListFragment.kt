@@ -17,12 +17,18 @@ import com.example.ownrepositarypatternsample.utils.extension.currentScope
 import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
 import com.example.ownrepositarypatternsample.utils.extension.startActivitys
 import com.example.ownrepositarypatternsample.utils.extension.toast
+import com.kotlinlibrary.loadmore.item.ErrorItem
+import com.kotlinlibrary.loadmore.item.LoadingItem
+import com.kotlinlibrary.loadmore.paginate.Direction
+import com.kotlinlibrary.loadmore.paginate.NoPaginate
+import com.kotlinlibrary.recycleradapter.setUpBinding
+import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
 import timber.log.Timber
 
 class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), MovieListViewHolder.Delegate {
     override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
-    private val adapter = MovieListAdapter(this)
-    private var paginator: PaginatorList? = null
+    private var adapter: SingleBindingAdapter<Movie>? = null
+    private lateinit var noPaginate: NoPaginate
 
     override fun getLayoutId(): Int = R.layout.main_fragment_movie
 
@@ -39,8 +45,16 @@ class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), Movie
     }
 
     private fun initializeUI() {
-        mBinding.recyclerView.adapter = adapter
-        mBinding.recyclerView.layoutManager = GridLayoutManager(context, 2)
+        adapter = mBinding.recyclerView.setUpBinding<Movie> {
+            withLayoutManager(GridLayoutManager(context, 2))
+            withLayoutResId(R.layout.item_poster)
+            onBind { _, _ ->
+            }
+            onClick { id, index, item ->
+
+            }
+            withItems(mutableListOf())
+        }
         paginator = PaginatorList(
             recyclerView = mBinding.recyclerView,
             isLoading = { mViewModel.getMovieListValues()?.status == Status.LOADING },
@@ -48,12 +62,51 @@ class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), Movie
             loadMore = { loadMore(it) },
             onLast =  { mViewModel.getMovieListValues()?.onLastPage!! }
         )
+        setupLoadMore()
+    }
+
+    private fun setupLoadMore() {
+        noPaginate = NoPaginate {
+            loadingTriggerThreshold = 0
+            recyclerView = mBinding.recyclerView
+            loadingItem = LoadingItem.DEFAULT
+            errorItem = ErrorItem.DEFAULT
+            direction = Direction.DOWN
+            onLoadMore = {
+                mViewModel.getMovieListValues()?.status == Status.LOADING
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
+                loadMore(it)
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (Random(25).nextInt() % 2 == 0) {
+                        count++
+                        noPaginate.showLoading(false)
+                        noPaginate.setNoMoreItems(count > 3)
+                        recyclerView.post {
+                            val list = MutableList(10) { index -> "LoadMore -> ${index + (adapter.itemCount + 1)}" }
+                            adapter + list
+                        }
+                    } else {
+                        noPaginate.showLoading(false)
+                        noPaginate.showError(true)
+                    }
+                }, 5000)
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        noPaginate.unbind()
+        super.onDestroy()
     }
 
     private fun updateMovieList(resource: Resource<List<Movie>>) {
         when(resource.status) {
             Status.SUCCESS ->  {
-                adapter.addMovieList(resource)
+                resource.data?.let {
+                    adapter?.addAll(it.toMutableList())
+                }
                 paginator?.initFirstTime = false
             }
             Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())

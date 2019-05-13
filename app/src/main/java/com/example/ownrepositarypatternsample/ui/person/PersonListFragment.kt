@@ -1,9 +1,10 @@
 package com.example.ownrepositarypatternsample.ui.person
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.ownrepositarypatternsample.PersonListBinding
+import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseFragment
 import com.example.ownrepositarypatternsample.base.Resource
@@ -13,16 +14,23 @@ import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.person.detail.PersonDetailActivity
 import com.example.ownrepositarypatternsample.utils.extension.currentScope
-import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
-import com.example.ownrepositarypatternsample.utils.extension.startActivitys
-import com.example.ownrepositarypatternsample.utils.extension.toast
-import com.skydoves.baserecyclerviewadapter.RecyclerViewPaginator
+import com.kotlinlibrary.loadmore.item.ErrorItem
+import com.kotlinlibrary.loadmore.item.LoadingItem
+import com.kotlinlibrary.loadmore.paginate.Direction
+import com.kotlinlibrary.loadmore.paginate.NoPaginate
+import com.kotlinlibrary.recycleradapter.setUpBinding
+import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
+import timber.log.Timber
+import com.example.ownrepositarypatternsample.databinding.ItemPersonBinding
+import com.example.ownrepositarypatternsample.databinding.MainFragmentStarBinding
+import com.kotlinlibrary.utils.ktx.observeLiveData
+import com.kotlinlibrary.utils.navigate.launchActivity
+import org.jetbrains.anko.toast
 
-class PersonListFragment: BaseFragment<PersonListBinding, MainViewModel>(), PeopleViewHolder.Delegate {
+class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>() {
     override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
-
-    private val adapter = PeopleAdapter(this)
-    private lateinit var paginator: RecyclerViewPaginator
+    private var adapter: SingleBindingAdapter<Person>? = null
+    private lateinit var noPaginate: NoPaginate
 
     override fun getLayoutId(): Int = R.layout.main_fragment_star
 
@@ -32,35 +40,67 @@ class PersonListFragment: BaseFragment<PersonListBinding, MainViewModel>(), Peop
     }
 
     override fun initObserve() {
-        observeLiveData(mViewModel.getPeopleObservable()) { updatePeople(it) }
-        mViewModel.postPeoplePage(1)
+        observeLiveData(mViewModel.getPeopleListObservable()) { updatePeople(it) }
     }
 
     private fun initializeUI() {
-        mBinding.recyclerView.adapter = adapter
-        mBinding.recyclerView.layoutManager = GridLayoutManager(context, 2)
-        paginator = RecyclerViewPaginator(
-                recyclerView = mBinding.recyclerView,
-                isLoading = { mViewModel.getPeopleValues()?.status == Status.LOADING },
-                loadMore = { loadMore(it) },
-                onLast =  { mViewModel.getPeopleValues()?.onLastPage!! })
+        adapter = mBinding.recyclerView.setUpBinding<Person> {
+            withLayoutManager(GridLayoutManager(context, 2))
+            withLayoutResId(R.layout.item_person)
+            onBind<ItemPersonBinding>(BR.data) { _, _ ->
+            }
+            onClick(R.id.item_person_profile) { _, _, item ->
+                /*activity?.let { act ->
+                    PersonDetailActivity.startActivity(this@PersonListFragment, act, item, view)
+                } ?: */
+                (mContext as Activity).launchActivity<PersonDetailActivity>(params = *arrayOf("person" to item))
+            }
+            withItems(mutableListOf())
+        }
+        setupLoadMore()
+    }
+
+    private fun setupLoadMore() {
+        noPaginate = NoPaginate {
+            loadingTriggerThreshold = 0
+            recyclerView = mBinding.recyclerView
+            loadingItem = LoadingItem.DEFAULT
+            errorItem = ErrorItem.DEFAULT
+            direction = Direction.DOWN
+            onLoadMore = {
+                mViewModel.getPeopleListValues()?.status == Status.LOADING
+                mViewModel.postPeoplePage()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        noPaginate.unbind()
+        super.onDestroy()
     }
 
     private fun updatePeople(resource: Resource<List<Person>>) {
         when(resource.status) {
-            Status.SUCCESS -> adapter.addPeople(resource)
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
-            Status.LOADING -> { }
+            Status.SUCCESS ->  {
+                Timber.e("Load Person List ${resource.data}")
+                noPaginate.showLoading(false)
+                noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)
+                resource.data?.let {
+                    adapter?.addAll(it.toMutableList())
+                }
+            }
+            Status.ERROR -> {
+                Timber.e("Error Person List")
+                mContext.toast(resource.errorEnvelope?.status_message.toString())
+                noPaginate.showLoading(false)
+                noPaginate.showError(true)
+                noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)
+            }
+            Status.LOADING -> {
+                Timber.e("Loading Person List")
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
+            }
         }
-    }
-
-    private fun loadMore(page: Int) {
-        mViewModel.postPeoplePage(page)
-    }
-
-    override fun onItemClick(person: Person, view: View) {
-        activity?.let {
-            PersonDetailActivity.startActivity(this, it, person, view)
-        } ?: startActivitys<PersonDetailActivity>("person" to person)
     }
 }

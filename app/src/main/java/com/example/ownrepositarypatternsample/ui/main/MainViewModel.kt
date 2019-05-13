@@ -46,13 +46,34 @@ class MainViewModel(
 
     fun getMovieListObservable() = movieListLiveData
     fun getMovieListValues() = getMovieListObservable().value
-    fun postMoviePage(page: Int) = moviePageLiveData.postValue(page)
+    fun postMoviePage() {
+        if(moviePageLiveData.value != null) {
+            val page: Int = moviePageLiveData.value!! + 1
+            moviePageLiveData.postValue(page)
+        } else {
+            moviePageLiveData.postValue(1)
+        }
+    }
 
     fun getTvListObservable() = tvListLiveData
     fun getTvListValues() = getTvListObservable().value
-    fun postTvPage(page: Int) = tvPageLiveData.postValue(page)
+    fun postTvPage() {
+        if(tvPageLiveData.value != null) {
+            val page: Int = tvPageLiveData.value!! + 1
+            tvPageLiveData.postValue(page)
+        } else {
+            tvPageLiveData.postValue(1)
+        }
+    }
 
-    fun getPeopleObservable() = peopleLiveData
-    fun getPeopleValues() = getPeopleObservable().value
-    fun postPeoplePage(page: Int) = peoplePageLiveData.postValue(page)
+    fun getPeopleListObservable() = peopleLiveData
+    fun getPeopleListValues() = getPeopleListObservable().value
+    fun postPeoplePage() {
+        if(peoplePageLiveData.value != null) {
+            val page: Int = peoplePageLiveData.value!! + 1
+            peoplePageLiveData.postValue(page)
+        } else {
+            peoplePageLiveData.postValue(1)
+        }
+    }
 }

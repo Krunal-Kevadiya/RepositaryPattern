@@ -1,31 +1,37 @@
 package com.example.ownrepositarypatternsample.ui.movie
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.ownrepositarypatternsample.MovieListBinding
+import com.bumptech.glide.Glide
+import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseFragment
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
+import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
+import com.example.ownrepositarypatternsample.databinding.ItemMovieBinding
+import com.example.ownrepositarypatternsample.databinding.MainFragmentMovieBinding
 import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.movie.detail.MovieDetailActivity
-import com.example.ownrepositarypatternsample.utils.PaginatorList
 import com.example.ownrepositarypatternsample.utils.extension.currentScope
-import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
-import com.example.ownrepositarypatternsample.utils.extension.startActivitys
-import com.example.ownrepositarypatternsample.utils.extension.toast
+import com.github.florent37.glidepalette.BitmapPalette
+import com.github.florent37.glidepalette.GlidePalette
 import com.kotlinlibrary.loadmore.item.ErrorItem
 import com.kotlinlibrary.loadmore.item.LoadingItem
 import com.kotlinlibrary.loadmore.paginate.Direction
 import com.kotlinlibrary.loadmore.paginate.NoPaginate
 import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
+import com.kotlinlibrary.utils.ktx.observeLiveData
+import com.kotlinlibrary.utils.navigate.launchActivity
+import org.jetbrains.anko.toast
 import timber.log.Timber
 
-class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), MovieListViewHolder.Delegate {
+class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>() {
     override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
     private var adapter: SingleBindingAdapter<Movie>? = null
     private lateinit var noPaginate: NoPaginate
@@ -41,27 +47,29 @@ class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), Movie
         observeLiveData(mViewModel.getMovieListObservable()) {
             updateMovieList(it)
         }
-        mViewModel.postMoviePage(1)
     }
 
     private fun initializeUI() {
         adapter = mBinding.recyclerView.setUpBinding<Movie> {
             withLayoutManager(GridLayoutManager(context, 2))
-            withLayoutResId(R.layout.item_poster)
-            onBind { _, _ ->
+            withLayoutResId(R.layout.item_movie)
+            onBind<ItemMovieBinding>(BR.data) { _, item ->
+                item.poster_path?.let {
+                    Glide.with(mContext)
+                        .load(Api.getPosterPath(it))
+                        .listener(
+                            GlidePalette.with(Api.getPosterPath(it))
+                                .use(BitmapPalette.Profile.VIBRANT)
+                                .intoBackground(itemPosterPalette)
+                                .crossfade(true)
+                        ).into(itemPosterPost)
+                }
             }
-            onClick { id, index, item ->
-
+            onClick { _, _, item ->
+                (mContext as Activity).launchActivity<MovieDetailActivity>(params = *arrayOf("movie" to item))
             }
             withItems(mutableListOf())
         }
-        paginator = PaginatorList(
-            recyclerView = mBinding.recyclerView,
-            isLoading = { mViewModel.getMovieListValues()?.status == Status.LOADING },
-            currentPage = 1,
-            loadMore = { loadMore(it) },
-            onLast =  { mViewModel.getMovieListValues()?.onLastPage!! }
-        )
         setupLoadMore()
     }
 
@@ -74,24 +82,7 @@ class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), Movie
             direction = Direction.DOWN
             onLoadMore = {
                 mViewModel.getMovieListValues()?.status == Status.LOADING
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
-                loadMore(it)
-
-                Handler(Looper.getMainLooper()).postDelayed({
-                    if (Random(25).nextInt() % 2 == 0) {
-                        count++
-                        noPaginate.showLoading(false)
-                        noPaginate.setNoMoreItems(count > 3)
-                        recyclerView.post {
-                            val list = MutableList(10) { index -> "LoadMore -> ${index + (adapter.itemCount + 1)}" }
-                            adapter + list
-                        }
-                    } else {
-                        noPaginate.showLoading(false)
-                        noPaginate.showError(true)
-                    }
-                }, 5000)
+                mViewModel.postMoviePage()
             }
         }
     }
@@ -104,23 +95,25 @@ class MovieListFragment : BaseFragment<MovieListBinding, MainViewModel>(), Movie
     private fun updateMovieList(resource: Resource<List<Movie>>) {
         when(resource.status) {
             Status.SUCCESS ->  {
+                Timber.e("Load Movie List ${resource.data}")
+                noPaginate.showLoading(false)
+                noPaginate.setNoMoreItems(mViewModel.getMovieListValues()?.onLastPage!!)
                 resource.data?.let {
                     adapter?.addAll(it.toMutableList())
                 }
-                paginator?.initFirstTime = false
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> {
+                Timber.e("Error Movie List")
+                mContext.toast(resource.errorEnvelope?.status_message.toString())
+                noPaginate.showLoading(false)
+                noPaginate.showError(true)
+                noPaginate.setNoMoreItems(mViewModel.getMovieListValues()?.onLastPage!!)
+            }
             Status.LOADING -> {
                 Timber.e("Loading Movie List")
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
             }
         }
-    }
-
-    private fun loadMore(page: Int) {
-        mViewModel.postMoviePage(page)
-    }
-
-    override fun onItemClick(movie: Movie) {
-        startActivitys<MovieDetailActivity>("movie" to movie)
     }
 }

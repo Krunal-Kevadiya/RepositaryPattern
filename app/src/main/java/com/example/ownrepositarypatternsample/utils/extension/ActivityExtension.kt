@@ -2,34 +2,12 @@ package com.example.ownrepositarypatternsample.utils.extension
 
 import android.app.Activity
 import android.graphics.drawable.Drawable
-import android.os.Build
-import com.google.android.material.appbar.CollapsingToolbarLayout
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import android.view.View
-import android.view.ViewAnimationUtils
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.example.ownrepositarypatternsample.R
-
-fun Activity.checkIsMaterialVersion() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-
-fun Activity.circularRevealedAtCenter(view: View) {
-    val cx = (view.left + view.right) / 2
-    val cy = (view.top + view.bottom) / 2
-    val finalRadius = Math.max(view.width, view.height)
-
-    if(checkIsMaterialVersion() && view.isAttachedToWindow) {
-        val anim = ViewAnimationUtils.createCircularReveal(view, cx, cy, 0f, finalRadius.toFloat())
-        view.visible()
-        view.setBackgroundColor(ContextCompat.getColor(this, R.color.background))
-        anim.duration = 550
-        anim.start()
-    }
-}
+import com.kotlinlibrary.utils.ktx.circularRevealedAtCenter
 
 fun Activity.requestGlideListener(view: View): RequestListener<Drawable> {
     return object: RequestListener<Drawable> {
@@ -41,31 +19,5 @@ fun Activity.requestGlideListener(view: View): RequestListener<Drawable> {
             circularRevealedAtCenter(view)
             return false
         }
-    }
-}
-
-fun AppCompatActivity.simpleToolbarWithHome(toolbar: Toolbar, title_: String = "") {
-    setSupportActionBar(toolbar)
-    supportActionBar?.run {
-        setDisplayHomeAsUpEnabled(true)
-        setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp)
-        title = title_
-    }
-}
-
-fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
-    if(checkIsMaterialVersion()) {
-        toolbar.layoutParams = (toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams).apply {
-            topMargin = getStatusBarSize()
-        }
-    }
-}
-
-private fun AppCompatActivity.getStatusBarSize(): Int {
-    val idStatusBarHeight = resources.getIdentifier("status_bar_height", "dimen", "android")
-    return if (idStatusBarHeight > 0) {
-        resources.getDimensionPixelSize(idStatusBarHeight)
-    } else {
-        0
     }
 }

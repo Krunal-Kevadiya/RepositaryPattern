@@ -1,7 +1,7 @@
 package com.example.ownrepositarypatternsample.di.interceptor
 
 import android.content.Context
-import com.example.ownrepositarypatternsample.utils.extension.hasConnection
+import com.kotlinlibrary.retrofitadapter.hasConnection
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException

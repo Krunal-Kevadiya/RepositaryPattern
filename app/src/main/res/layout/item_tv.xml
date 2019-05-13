@@ -4,7 +4,7 @@
         xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <variable name="data"
-                  type="com.example.ownrepositarypatternsample.data.local.entity.Movie"/>
+                  type="com.example.ownrepositarypatternsample.data.local.entity.Tv"/>
     </data>
 
     <RelativeLayout
@@ -19,8 +19,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="240dp"
                 android:scaleType="fitXY"
-                bind:image_url="@{data.poster_path}"
                 tools:src="@drawable/ic_star_white_24dp"/>
+
+        <!--bind:tv_url="@{data.poster_path}"-->
 
         <RelativeLayout
                 android:layout_width="match_parent"
@@ -41,7 +42,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:textColor="@color/white"
-                    android:text="@{data.title}"
+                    android:text="@{data.name}"
                     android:textStyle="bold"
                     android:textSize="14sp"
                     android:gravity="center"

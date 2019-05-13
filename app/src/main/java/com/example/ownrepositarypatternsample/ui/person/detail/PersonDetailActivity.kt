@@ -22,10 +22,9 @@ import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Person
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
-import com.example.ownrepositarypatternsample.utils.extension.checkIsMaterialVersion
 import com.example.ownrepositarypatternsample.utils.extension.currentScope
-import com.example.ownrepositarypatternsample.utils.extension.observeLiveData
-import com.example.ownrepositarypatternsample.utils.extension.visible
+import com.kotlinlibrary.utils.ktx.observeLiveData
+import com.kotlinlibrary.utils.ktx.visible
 import org.jetbrains.anko.startActivityForResult
 import org.jetbrains.anko.toast
 
@@ -91,7 +90,7 @@ class PersonDetailActivity : BaseActivity<PersonDetailBinding, PersonDetailViewM
         return intent.getParcelableExtra("person") as Person
     }
 
-    companion object {
+    /*companion object {
         const val intent_requestCode = 1000
 
         fun startActivity(fragment: Fragment, activity: FragmentActivity, person: Person, view: View) {
@@ -106,5 +105,5 @@ class PersonDetailActivity : BaseActivity<PersonDetailBinding, PersonDetailViewM
                 activity.startActivityForResult<PersonDetailActivity>(intent_requestCode, "person" to person)
             }
         }
-    }
+    }*/
 }

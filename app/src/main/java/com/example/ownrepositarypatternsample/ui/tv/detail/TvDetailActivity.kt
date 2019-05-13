@@ -3,9 +3,9 @@ package com.example.ownrepositarypatternsample.ui.tv.detail
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.MenuItem
 import com.bumptech.glide.Glide
+import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.TvDetailBinding
 import com.example.ownrepositarypatternsample.base.BaseActivity
@@ -16,18 +16,24 @@ import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyword
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
-import com.example.ownrepositarypatternsample.ui.movie.detail.ReviewListAdapter
-import com.example.ownrepositarypatternsample.ui.movie.detail.VideoListAdapter
-import com.example.ownrepositarypatternsample.ui.movie.detail.VideoListViewHolder
+import com.example.ownrepositarypatternsample.databinding.ItemReviewBinding
+import com.example.ownrepositarypatternsample.databinding.ItemVideoBinding
 import com.example.ownrepositarypatternsample.utils.KeywordListMapper
 import com.example.ownrepositarypatternsample.utils.extension.*
+import com.github.florent37.glidepalette.BitmapPalette
+import com.github.florent37.glidepalette.GlidePalette
+import com.kotlinlibrary.recycleradapter.setUpBinding
+import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
+import com.kotlinlibrary.utils.ktx.applyToolbarMargin
+import com.kotlinlibrary.utils.ktx.observeLiveData
+import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
+import com.kotlinlibrary.utils.ktx.visible
 import org.jetbrains.anko.toast
 
-class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), VideoListViewHolder.Delegate {
+class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
     override val mViewModel: TvDetailViewModel by currentScope<TvDetailActivity>().inject()
-
-    private val videoAdapter by lazy { VideoListAdapter(this) }
-    private val reviewAdapter by lazy { ReviewListAdapter() }
+    private var videoAdapter: SingleBindingAdapter<Video>? = null
+    private var reviewAdapter: SingleBindingAdapter<Review>? = null
 
     override fun getLayoutId(): Int = R.layout.activity_tv_detail
 
@@ -55,7 +61,7 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), Vid
                     .listener(requestGlideListener(mBinding.tvDetailPoster))
                     .into(mBinding.tvDetailPoster)
         } ?: let {
-            Glide.with(this).load(Api.getBackdropPath(getTvFromIntent().poster_path))
+            Glide.with(this).load(Api.getBackdropPath(getTvFromIntent().poster_path!!))
                     .listener(requestGlideListener(mBinding.tvDetailPoster))
                     .into(mBinding.tvDetailPoster)
         }
@@ -63,11 +69,41 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), Vid
         mBinding.incHeader.detailHeaderTitle.text = getTvFromIntent().name
         mBinding.incHeader.detailHeaderRelease.text = "First Air Date : ${getTvFromIntent().first_air_date}"
         mBinding.incHeader.detailHeaderStar.rating = getTvFromIntent().vote_average / 2
-        mBinding.incBody.detailBodyRecyclerViewTrailers.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        mBinding.incBody.detailBodyRecyclerViewTrailers.adapter = videoAdapter
         mBinding.incBody.detailBodySummary.text = getTvFromIntent().overview
-        mBinding.incBody.detailBodyRecyclerViewReviews.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        mBinding.incBody.detailBodyRecyclerViewReviews.adapter = reviewAdapter
+
+        videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
+            //withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.VERTICAL, false))
+            withLayoutResId(R.layout.item_video)
+            onBind<ItemVideoBinding>(BR.data) { _, item ->
+                item.key?.let {
+                    Glide.with(this@TvDetailActivity)
+                        .load(Api.getYoutubeThumbnailPath(it))
+                        .listener(
+                            GlidePalette.with(Api.getYoutubeThumbnailPath(it))
+                                .use(BitmapPalette.Profile.VIBRANT)
+                                .intoBackground(itemVideoPalette)
+                                .crossfade(true))
+                        .into(itemVideoCover)
+                }
+            }
+            onClick { _, _, item ->
+                item.key?.let {
+                    val playVideoIntent = Intent(Intent.ACTION_VIEW, Uri.parse(Api.getYoutubeVideoPath(it)))
+                    startActivity(playVideoIntent)
+                }
+            }
+            withItems(mutableListOf())
+        }
+
+        reviewAdapter = mBinding.incBody.detailBodyRecyclerViewReviews.setUpBinding<Review> {
+            //withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.VERTICAL, false))
+            withLayoutResId(R.layout.item_review)
+            onBind<ItemReviewBinding>(BR.data) { _, _ ->
+            }
+            onClick { _, _, _ ->
+            }
+            withItems(mutableListOf())
+        }
         mBinding.incBody.detailBodyRecyclerViewReviews.isNestedScrollingEnabled = false
         mBinding.incBody.detailBodyRecyclerViewReviews.setHasFixedSize(true)
     }
@@ -89,9 +125,9 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), Vid
     private fun updateVideoList(resource: Resource<List<Video>>) {
         when(resource.status) {
             Status.SUCCESS -> {
-                videoAdapter.addVideoList(resource)
+                resource.data?.let {
+                    videoAdapter?.addAll(it.toMutableList())
 
-                if(resource.data?.isNotEmpty()!!) {
                     mBinding.incBody.detailBodyTrailers.visible()
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
@@ -104,9 +140,9 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), Vid
     private fun updateReviewList(resource: Resource<List<Review>>) {
         when(resource.status) {
             Status.SUCCESS -> {
-                reviewAdapter.addReviewList(resource)
+                resource.data?.let {
+                    reviewAdapter?.addAll(it.toMutableList())
 
-                if(resource.data?.isNotEmpty()!!) {
                     mBinding.incBody.detailBodyReviews.visible()
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
@@ -123,10 +159,5 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>(), Vid
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if(item?.itemId == android.R.id.home) onBackPressed()
         return false
-    }
-
-    override fun onItemClicked(video: Video) {
-        val playVideoIntent = Intent(Intent.ACTION_VIEW, Uri.parse(Api.getYoutubeVideoPath(video.key)))
-        startActivity(playVideoIntent)
     }
 }

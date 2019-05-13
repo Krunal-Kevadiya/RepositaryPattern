@@ -11,7 +11,6 @@ import com.example.ownrepositarypatternsample.data.local.entity.Person
 import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.repository.DiscoverRepository
 import com.example.ownrepositarypatternsample.data.repository.PeopleRepository
-import timber.log.Timber
 
 class MainViewModel(
     private val discoverRepository: DiscoverRepository,
@@ -27,8 +26,6 @@ class MainViewModel(
     private val peopleLiveData: LiveData<Resource<List<Person>>>
 
     init {
-        Timber.d("injection MainViewModel")
-
         movieListLiveData = Transformations.switchMap(moviePageLiveData) {
             moviePageLiveData.value?.let {
                 discoverRepository.loadMovies(it)

@@ -2,11 +2,12 @@ package com.example.ownrepositarypatternsample.data.remote.response
 
 import com.example.ownrepositarypatternsample.base.repository.NetworkResponseModel
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
+import com.google.gson.annotations.SerializedName
 
 class ReviewListResponse(
-    val id: Int,
-    val page: Int,
-    val results: List<Review>,
-    val total_pages: Int,
-    val total_results: Int
+    @SerializedName("id") val id: Int,
+    @SerializedName("page") val page: Int,
+    @SerializedName("results") val results: List<Review>,
+    @SerializedName("total_pages") val totalPages: Int,
+    @SerializedName("total_results") val totalResults: Int
 ) : NetworkResponseModel

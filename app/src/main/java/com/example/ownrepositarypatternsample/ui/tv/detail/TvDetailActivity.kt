@@ -7,7 +7,6 @@ import android.view.MenuItem
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
-import com.example.ownrepositarypatternsample.TvDetailBinding
 import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
@@ -16,6 +15,7 @@ import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyword
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
+import com.example.ownrepositarypatternsample.databinding.ActivityTvDetailBinding
 import com.example.ownrepositarypatternsample.databinding.ItemReviewBinding
 import com.example.ownrepositarypatternsample.databinding.ItemVideoBinding
 import com.example.ownrepositarypatternsample.utils.KeywordListMapper
@@ -30,7 +30,7 @@ import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
 import com.kotlinlibrary.utils.ktx.visible
 import org.jetbrains.anko.toast
 
-class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
+class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel>() {
     override val mViewModel: TvDetailViewModel by currentScope<TvDetailActivity>().inject()
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
@@ -72,7 +72,6 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
         mBinding.incBody.detailBodySummary.text = getTvFromIntent().overview
 
         videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
-            //withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.VERTICAL, false))
             withLayoutResId(R.layout.item_video)
             onBind<ItemVideoBinding>(BR.data) { _, item ->
                 item.key?.let {
@@ -96,7 +95,6 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
         }
 
         reviewAdapter = mBinding.incBody.detailBodyRecyclerViewReviews.setUpBinding<Review> {
-            //withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.VERTICAL, false))
             withLayoutResId(R.layout.item_review)
             onBind<ItemReviewBinding>(BR.data) { _, _ ->
             }
@@ -117,7 +115,7 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
                     mBinding.incBody.detailBodyTags.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }
@@ -132,7 +130,7 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }
@@ -147,7 +145,7 @@ class TvDetailActivity : BaseActivity<TvDetailBinding, TvDetailViewModel>() {
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }

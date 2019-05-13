@@ -10,7 +10,6 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyw
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.repository.TvRepository
-import timber.log.Timber
 
 class TvDetailViewModel(
     private val repository: TvRepository
@@ -25,8 +24,6 @@ class TvDetailViewModel(
     private val reviewListLiveData: LiveData<Resource<List<Review>>>
 
     init {
-        Timber.d("Injection TvDetailViewModel")
-
         keywordListLiveData = Transformations.switchMap(keywordIdLiveData) {
             keywordIdLiveData.value?.let { repository.loadKeywordList(it) }
                 ?: AbsentLiveData.create()

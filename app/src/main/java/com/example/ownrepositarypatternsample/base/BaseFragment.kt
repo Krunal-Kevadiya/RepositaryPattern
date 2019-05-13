@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import com.example.ownrepositarypatternsample.BR
+import com.kotlinlibrary.utils.ktx.inflateBindView
 
 abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragment() {
     protected lateinit var mBinding: VDB
@@ -25,7 +25,7 @@ abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragme
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mBinding = DataBindingUtil.inflate(inflater, getLayoutId(), container, false)
+        mBinding = inflateBindView(getLayoutId(), container, false)
         return mBinding.root
     }
 

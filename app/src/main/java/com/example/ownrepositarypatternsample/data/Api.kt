@@ -19,6 +19,6 @@ object Api {
     }
 
     fun getYoutubeThumbnailPath(thumbnailPath: String): String {
-        return YOUTUBE_THUMBNAIL_URL + thumbnailPath + "/default.jpg"
+        return "$YOUTUBE_THUMBNAIL_URL$thumbnailPath/default.jpg"
     }
 }

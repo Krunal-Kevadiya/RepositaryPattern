@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
-import com.example.ownrepositarypatternsample.MovieDetailBinding
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
@@ -16,6 +15,7 @@ import com.example.ownrepositarypatternsample.data.local.entity.Movie
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyword
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
+import com.example.ownrepositarypatternsample.databinding.ActivityMovieDetailBinding
 import com.example.ownrepositarypatternsample.databinding.ItemReviewBinding
 import com.example.ownrepositarypatternsample.databinding.ItemVideoBinding
 import com.example.ownrepositarypatternsample.utils.KeywordListMapper
@@ -30,7 +30,7 @@ import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
 import com.kotlinlibrary.utils.ktx.visible
 import org.jetbrains.anko.toast
 
-class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewModel>() {
+class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetailViewModel>() {
     override val mViewModel: MovieDetailViewModel by currentScope<MovieDetailActivity>().inject()
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
@@ -71,7 +71,6 @@ class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewMode
         mBinding.incBody.detailBodySummary.text = getMovieFromIntent().overview
 
         videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
-            //withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.VERTICAL, false))
             withLayoutResId(R.layout.item_video)
             onBind<ItemVideoBinding>(BR.data) { _, item ->
                 item.key?.let {
@@ -95,7 +94,6 @@ class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewMode
         }
 
         reviewAdapter = mBinding.incBody.detailBodyRecyclerViewReviews.setUpBinding<Review> {
-            //withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.VERTICAL, false))
             withLayoutResId(R.layout.item_review)
             onBind<ItemReviewBinding>(BR.data) { _, _ ->
             }
@@ -116,7 +114,7 @@ class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewMode
                     mBinding.incBody.detailBodyTags.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }
@@ -131,7 +129,7 @@ class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewMode
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }
@@ -146,7 +144,7 @@ class MovieDetailActivity : BaseActivity<MovieDetailBinding, MovieDetailViewMode
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }

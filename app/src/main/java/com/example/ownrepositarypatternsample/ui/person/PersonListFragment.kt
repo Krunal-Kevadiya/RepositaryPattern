@@ -1,6 +1,5 @@
 package com.example.ownrepositarypatternsample.ui.person
 
-import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
@@ -49,11 +48,10 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
             withLayoutResId(R.layout.item_person)
             onBind<ItemPersonBinding>(BR.data) { _, _ ->
             }
-            onClick(R.id.item_person_profile) { _, _, item ->
-                /*activity?.let { act ->
+            onClick(R.id.item_person_profile) { view, _, item ->
+                activity?.let { act ->
                     PersonDetailActivity.startActivity(this@PersonListFragment, act, item, view)
-                } ?: */
-                (mContext as Activity).launchActivity<PersonDetailActivity>(params = *arrayOf("person" to item))
+                } ?: launchActivity<PersonDetailActivity>(params = *arrayOf("person" to item))
             }
             withItems(mutableListOf())
         }
@@ -91,7 +89,7 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
             }
             Status.ERROR -> {
                 Timber.e("Error Person List")
-                mContext.toast(resource.errorEnvelope?.status_message.toString())
+                mContext.toast(resource.errorEnvelope?.statusMessage.toString())
                 noPaginate.showLoading(false)
                 noPaginate.showError(true)
                 noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)

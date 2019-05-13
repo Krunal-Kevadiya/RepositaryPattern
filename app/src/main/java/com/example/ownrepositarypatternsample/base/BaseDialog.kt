@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
 import com.example.ownrepositarypatternsample.BR
+import com.kotlinlibrary.utils.ktx.inflateBindView
 
 abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFragment() {
     protected lateinit var mBinding: VDB
@@ -24,7 +24,7 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFr
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mBinding = DataBindingUtil.inflate(inflater, getLayoutId(), container, false)
+        mBinding = inflateBindView(getLayoutId(), container, false)
         dialog?.let {
             it.setCancelable(false)
             it.setCanceledOnTouchOutside(false)

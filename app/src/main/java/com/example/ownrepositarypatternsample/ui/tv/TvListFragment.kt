@@ -102,7 +102,7 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>() {
             }
             Status.ERROR -> {
                 Timber.e("Error Tv List")
-                mContext.toast(resource.errorEnvelope?.status_message.toString())
+                mContext.toast(resource.errorEnvelope?.statusMessage.toString())
                 noPaginate.showLoading(false)
                 noPaginate.showError(true)
                 noPaginate.setNoMoreItems(mViewModel.getTvListValues()?.onLastPage!!)

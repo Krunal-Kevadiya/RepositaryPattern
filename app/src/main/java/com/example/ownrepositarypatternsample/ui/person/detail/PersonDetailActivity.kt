@@ -2,6 +2,7 @@ package com.example.ownrepositarypatternsample.ui.person.detail
 
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.core.app.ActivityOptionsCompat
@@ -14,7 +15,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import com.example.ownrepositarypatternsample.PersonDetailBinding
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
@@ -22,13 +22,16 @@ import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Person
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
+import com.example.ownrepositarypatternsample.databinding.ActivityPersonDetailBinding
 import com.example.ownrepositarypatternsample.utils.extension.currentScope
+import com.kotlinlibrary.utils.ktx.fromApi
 import com.kotlinlibrary.utils.ktx.observeLiveData
+import com.kotlinlibrary.utils.ktx.toApi
 import com.kotlinlibrary.utils.ktx.visible
 import org.jetbrains.anko.startActivityForResult
 import org.jetbrains.anko.toast
 
-class PersonDetailActivity : BaseActivity<PersonDetailBinding, PersonDetailViewModel>() {
+class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDetailViewModel>() {
     override val mViewModel: PersonDetailViewModel by currentScope<PersonDetailActivity>().inject()
 
     override fun getLayoutId(): Int = R.layout.activity_person_detail
@@ -73,15 +76,15 @@ class PersonDetailActivity : BaseActivity<PersonDetailBinding, PersonDetailViewM
         when(resource.status) {
             Status.SUCCESS -> {
                 resource.data?.let {
-                    mBinding.personDetailBiography.text = it.biography
-                    mBinding.detailPersonTags.tags = it.also_known_as
+                    mBinding.personDetailBiography.text = it.bioGraphy
+                    mBinding.detailPersonTags.tags = it.alsoKnownAs
 
-                    if(it.also_known_as.isNotEmpty()) {
+                    if(it.alsoKnownAs.isNotEmpty()) {
                         mBinding.detailPersonTags.visible()
                     }
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.status_message.toString())
+            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
             Status.LOADING -> { }
         }
     }
@@ -90,20 +93,21 @@ class PersonDetailActivity : BaseActivity<PersonDetailBinding, PersonDetailViewM
         return intent.getParcelableExtra("person") as Person
     }
 
-    /*companion object {
-        const val intent_requestCode = 1000
+    companion object {
+        private const val INTENT_REQUEST_CODE = 1000
 
         fun startActivity(fragment: Fragment, activity: FragmentActivity, person: Person, view: View) {
-            if (activity.checkIsMaterialVersion()) {
+            fromApi(Build.VERSION_CODES.LOLLIPOP, true) {
                 val intent = Intent(activity, PersonDetailActivity::class.java)
                 ViewCompat.getTransitionName(view)?.let {
                     val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, it)
                     intent.putExtra("person", person)
-                    activity.startActivityFromFragment(fragment, intent, intent_requestCode, options.toBundle())
+                    activity.startActivityFromFragment(fragment, intent, INTENT_REQUEST_CODE, options.toBundle())
                 }
-            } else {
-                activity.startActivityForResult<PersonDetailActivity>(intent_requestCode, "person" to person)
+            }
+            toApi(Build.VERSION_CODES.LOLLIPOP) {
+                activity.startActivityForResult<PersonDetailActivity>(INTENT_REQUEST_CODE, "person" to person)
             }
         }
-    }*/
+    }
 }

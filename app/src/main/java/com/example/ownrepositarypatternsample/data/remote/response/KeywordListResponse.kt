@@ -2,8 +2,9 @@ package com.example.ownrepositarypatternsample.data.remote.response
 
 import com.example.ownrepositarypatternsample.base.repository.NetworkResponseModel
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyword
+import com.google.gson.annotations.SerializedName
 
 data class KeywordListResponse(
-    val id: Int,
-    val keywords: List<Keyword>
+    @SerializedName("id") val id: Int,
+    @SerializedName("keywords") val keywords: List<Keyword>
 ) : NetworkResponseModel

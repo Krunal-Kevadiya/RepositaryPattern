@@ -5,9 +5,9 @@ import android.os.Bundle
 import androidx.annotation.LayoutRes
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import com.example.ownrepositarypatternsample.BR
+import com.kotlinlibrary.utils.ktx.setContentBindView
 
 abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel>: AppCompatActivity() {
     protected lateinit var mBinding: VDB
@@ -17,7 +17,7 @@ abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel>: AppComp
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mContext = this
-        mBinding = DataBindingUtil.setContentView(this, getLayoutId())
+        mBinding = setContentBindView(getLayoutId())
         mBinding.setVariable(BR.viewModel, mViewModel)
         mBinding.executePendingBindings()
         initObserve()

@@ -1,9 +1,9 @@
 package com.example.ownrepositarypatternsample.di.modul.http
 
 import com.example.ownrepositarypatternsample.BuildConfig
-import com.example.ownrepositarypatternsample.data.remote.adapter.LiveDataCallAdapterFactory
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.kotlinlibrary.retrofitadapter.livedata.LiveDataCallAdapterFactory
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit

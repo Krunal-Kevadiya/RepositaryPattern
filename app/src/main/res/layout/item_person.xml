@@ -5,7 +5,7 @@
         xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <variable name="data"
-                  type="com.example.ownrepositarypatternsample.data.local.entity.Person"/>
+                  type="com.example.ownrepositarypatternsample.data.local.entity.People"/>
     </data>
 
     <LinearLayout
@@ -29,7 +29,7 @@
                         android:layout_height="90dp"
                         android:layout_centerHorizontal="true"
                         android:scaleType="fitXY"
-                        bind:person_url="@{data.profile_path}"
+                        bind:person_url="@{data.profilePath}"
                         android:layout_marginTop="20dp"
                         android:transitionName="@string/transition_profile"
                         tools:src="@drawable/ic_live_tv_white_24dp"

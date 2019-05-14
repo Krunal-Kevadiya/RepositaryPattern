@@ -16,7 +16,7 @@ fun Activity.requestGlideListener(view: View): RequestListener<Drawable> {
         }
 
         override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-            circularRevealedAtCenter(view)
+            this@requestGlideListener.circularRevealedAtCenter(view)
             return false
         }
     }

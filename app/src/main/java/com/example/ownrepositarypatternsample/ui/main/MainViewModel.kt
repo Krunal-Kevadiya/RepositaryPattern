@@ -7,7 +7,7 @@ import com.example.ownrepositarypatternsample.base.repository.AbsentLiveData
 import com.example.ownrepositarypatternsample.base.BaseViewModel
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
-import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.repository.DiscoverRepository
 import com.example.ownrepositarypatternsample.data.repository.PeopleRepository
@@ -23,13 +23,11 @@ class MainViewModel(
     private val tvListLiveData: LiveData<Resource<List<Tv>>>
 
     private var peoplePageLiveData: MutableLiveData<Int> = MutableLiveData()
-    private val peopleLiveData: LiveData<Resource<List<Person>>>
+    private val peopleLiveData: LiveData<Resource<List<People>>>
 
     init {
         movieListLiveData = Transformations.switchMap(moviePageLiveData) {
-            moviePageLiveData.value?.let {
-                discoverRepository.loadMovies(it)
-            } ?: AbsentLiveData.create()
+            moviePageLiveData.value?.let { discoverRepository.loadMovies(it) } ?: AbsentLiveData.create()
         }
 
         tvListLiveData = Transformations.switchMap(tvPageLiveData) {

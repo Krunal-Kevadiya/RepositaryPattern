@@ -20,7 +20,7 @@ import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.Api
-import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.databinding.ActivityPersonDetailBinding
 import com.example.ownrepositarypatternsample.utils.extension.currentScope
@@ -51,7 +51,7 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
     private fun initializeUI() {
         mBinding.incTool.toolbarHome.setOnClickListener { onBackPressed() }
         mBinding.incTool.toolbarTitle.text = getPersonFromIntent().name
-        getPersonFromIntent().profile_path?.let {
+        getPersonFromIntent().profilePath?.let {
             Glide.with(this).load(Api.getPosterPath(it))
                     .apply(RequestOptions().circleCrop())
                     .listener(object: RequestListener<Drawable> {
@@ -84,29 +84,29 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                     }
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }
 
-    private fun getPersonFromIntent(): Person {
-        return intent.getParcelableExtra("person") as Person
+    private fun getPersonFromIntent(): People {
+        return intent.getParcelableExtra("person") as People
     }
 
     companion object {
         private const val INTENT_REQUEST_CODE = 1000
 
-        fun startActivity(fragment: Fragment, activity: FragmentActivity, person: Person, view: View) {
+        fun startActivity(fragment: Fragment, activity: FragmentActivity, people: People, view: View) {
             fromApi(Build.VERSION_CODES.LOLLIPOP, true) {
                 val intent = Intent(activity, PersonDetailActivity::class.java)
                 ViewCompat.getTransitionName(view)?.let {
                     val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, it)
-                    intent.putExtra("person", person)
+                    intent.putExtra("people", people)
                     activity.startActivityFromFragment(fragment, intent, INTENT_REQUEST_CODE, options.toBundle())
                 }
             }
             toApi(Build.VERSION_CODES.LOLLIPOP) {
-                activity.startActivityForResult<PersonDetailActivity>(INTENT_REQUEST_CODE, "person" to person)
+                activity.startActivityForResult<PersonDetailActivity>(INTENT_REQUEST_CODE, "people" to people)
             }
         }
     }

@@ -8,7 +8,7 @@ import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseFragment
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
-import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.person.detail.PersonDetailActivity
@@ -28,7 +28,7 @@ import org.jetbrains.anko.toast
 
 class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>() {
     override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
-    private var adapter: SingleBindingAdapter<Person>? = null
+    private var adapter: SingleBindingAdapter<People>? = null
     private lateinit var noPaginate: NoPaginate
 
     override fun getLayoutId(): Int = R.layout.main_fragment_star
@@ -43,7 +43,7 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
     }
 
     private fun initializeUI() {
-        adapter = mBinding.recyclerView.setUpBinding<Person> {
+        adapter = mBinding.recyclerView.setUpBinding<People> {
             withLayoutManager(GridLayoutManager(context, 2))
             withLayoutResId(R.layout.item_person)
             onBind<ItemPersonBinding>(BR.data) { _, _ ->
@@ -66,7 +66,6 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
             errorItem = ErrorItem.DEFAULT
             direction = Direction.DOWN
             onLoadMore = {
-                mViewModel.getPeopleListValues()?.status == Status.LOADING
                 mViewModel.postPeoplePage()
             }
         }
@@ -77,10 +76,10 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
         super.onDestroy()
     }
 
-    private fun updatePeople(resource: Resource<List<Person>>) {
+    private fun updatePeople(resource: Resource<List<People>>) {
         when(resource.status) {
             Status.SUCCESS ->  {
-                Timber.e("Load Person List ${resource.data}")
+                Timber.e("Load People List ${resource.data}")
                 noPaginate.showLoading(false)
                 noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)
                 resource.data?.let {
@@ -88,14 +87,14 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
                 }
             }
             Status.ERROR -> {
-                Timber.e("Error Person List")
-                mContext.toast(resource.errorEnvelope?.statusMessage.toString())
+                Timber.e("Error People List")
+                mContext.toast(resource.message.toString())
                 noPaginate.showLoading(false)
                 noPaginate.showError(true)
                 noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)
             }
             Status.LOADING -> {
-                Timber.e("Loading Person List")
+                Timber.e("Loading People List")
                 noPaginate.showError(false)
                 noPaginate.showLoading(true)
             }

@@ -54,7 +54,7 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
             withLayoutManager(GridLayoutManager(context, 2))
             withLayoutResId(R.layout.item_movie)
             onBind<ItemMovieBinding>(BR.data) { _, item ->
-                item.poster_path?.let {
+                item.posterPath?.let {
                     Glide.with(mContext)
                         .load(Api.getPosterPath(it))
                         .listener(
@@ -81,7 +81,6 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
             errorItem = ErrorItem.DEFAULT
             direction = Direction.DOWN
             onLoadMore = {
-                mViewModel.getMovieListValues()?.status == Status.LOADING
                 mViewModel.postMoviePage()
             }
         }
@@ -104,7 +103,7 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
             }
             Status.ERROR -> {
                 Timber.e("Error Movie List")
-                mContext.toast(resource.errorEnvelope?.statusMessage.toString())
+                mContext.toast(resource.message.toString())
                 noPaginate.showLoading(false)
                 noPaginate.showError(true)
                 noPaginate.setNoMoreItems(mViewModel.getMovieListValues()?.onLastPage!!)

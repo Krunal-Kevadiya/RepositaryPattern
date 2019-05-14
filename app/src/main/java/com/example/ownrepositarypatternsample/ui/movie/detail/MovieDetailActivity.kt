@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
@@ -56,21 +57,22 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
     private fun initializeUI() {
         applyToolbarMargin(mBinding.movieDetailToolbar)
         simpleToolbarWithHome(mBinding.movieDetailToolbar, getMovieFromIntent().title)
-        getMovieFromIntent().backdrop_path?.let {
+        getMovieFromIntent().backdropPath?.let {
             Glide.with(this).load(Api.getBackdropPath(it))
                     .listener(requestGlideListener(mBinding.movieDetailPoster))
                     .into(mBinding.movieDetailPoster)
         } ?: let {
-            Glide.with(this).load(Api.getBackdropPath(getMovieFromIntent().poster_path!!))
+            Glide.with(this).load(Api.getBackdropPath(getMovieFromIntent().posterPath!!))
                     .listener(requestGlideListener(mBinding.movieDetailPoster))
                     .into(mBinding.movieDetailPoster)
         }
         mBinding.incHeader.detailHeaderTitle.text = getMovieFromIntent().title
-        mBinding.incHeader.detailHeaderRelease.text = "Release Date : ${getMovieFromIntent().release_date}"
-        mBinding.incHeader.detailHeaderStar.rating = getMovieFromIntent().vote_average / 2
+        mBinding.incHeader.detailHeaderRelease.text = "Release Date : ${getMovieFromIntent().releaseDate}"
+        mBinding.incHeader.detailHeaderStar.rating = getMovieFromIntent().voteAverage / 2
         mBinding.incBody.detailBodySummary.text = getMovieFromIntent().overview
 
         videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
+            withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.HORIZONTAL, false))
             withLayoutResId(R.layout.item_video)
             onBind<ItemVideoBinding>(BR.data) { _, item ->
                 item.key?.let {
@@ -114,7 +116,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
                     mBinding.incBody.detailBodyTags.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }
@@ -129,7 +131,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }
@@ -144,7 +146,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }

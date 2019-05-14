@@ -8,12 +8,19 @@ import com.example.ownrepositarypatternsample.data.local.dao.MovieDao
 import com.example.ownrepositarypatternsample.data.local.dao.PeopleDao
 import com.example.ownrepositarypatternsample.data.local.dao.TvDao
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
-import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.local.entity.Tv
 
-@Database(entities = [Movie::class, Tv::class, Person::class], version = 3, exportSchema = false)
-@TypeConverters(value = [StringListConverter::class, IntegerListConverter::class,
-    KeywordListConverter::class, VideoListConverter::class, ReviewListConverter::class])
+@Database(
+    entities = [Movie::class, Tv::class, People::class],
+    version = DatabaseAnnotation.DATABASE_VERSION,
+    exportSchema = false
+)
+@TypeConverters(value = [
+    StringListConverter::class, IntegerListConverter::class,
+    KeywordListConverter::class, VideoListConverter::class,
+    ReviewListConverter::class
+])
 abstract class AppDatabase: RoomDatabase() {
     abstract fun movieDao(): MovieDao
     abstract fun tvDao(): TvDao

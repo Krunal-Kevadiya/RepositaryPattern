@@ -2,19 +2,20 @@ package com.example.ownrepositarypatternsample.data.local.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.data.local.DatabaseAnnotation
+import com.example.ownrepositarypatternsample.data.local.entity.People
 
 @Dao
 interface PeopleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertPeople(people: List<Person>)
+    fun insertPeople(people: List<People>)
 
     @Update
-    fun updatePerson(person: Person)
+    fun updatePerson(people: People)
 
-    @Query("SELECT * FROM people WHERE id = :id_")
-    fun getPerson(id_: Int): Person
+    @Query("SELECT * FROM ${DatabaseAnnotation.TABLE_PEOPLE} WHERE ${DatabaseAnnotation.ID} = :id_")
+    fun getPerson(id_: Int): People
 
-    @Query("SELECT * FROM People WHERE page = :page_")
-    fun getPeople(page_: Int): LiveData<List<Person>>
+    @Query("SELECT * FROM ${DatabaseAnnotation.TABLE_PEOPLE} WHERE ${DatabaseAnnotation.PAGE} = :page_")
+    fun getPeople(page_: Int): LiveData<List<People>>
 }

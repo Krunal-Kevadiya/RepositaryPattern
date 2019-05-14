@@ -52,7 +52,7 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>() {
             withLayoutManager(GridLayoutManager(context, 2))
             withLayoutResId(R.layout.item_tv)
             onBind<ItemTvBinding>(BR.data) { _, item ->
-                item.poster_path?.let {
+                item.posterPath?.let {
                     Glide.with(mContext)
                         .load(Api.getPosterPath(it))
                         .listener(
@@ -79,7 +79,6 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>() {
             errorItem = ErrorItem.DEFAULT
             direction = Direction.DOWN
             onLoadMore = {
-                mViewModel.getTvListValues()?.status == Status.LOADING
                 mViewModel.postTvPage()
             }
         }
@@ -102,7 +101,7 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>() {
             }
             Status.ERROR -> {
                 Timber.e("Error Tv List")
-                mContext.toast(resource.errorEnvelope?.statusMessage.toString())
+                mContext.toast(resource.message.toString())
                 noPaginate.showLoading(false)
                 noPaginate.showError(true)
                 noPaginate.setNoMoreItems(mViewModel.getTvListValues()?.onLastPage!!)

@@ -1,9 +1,11 @@
 package com.example.ownrepositarypatternsample.di.modul.http
 
 import com.example.ownrepositarypatternsample.BuildConfig
+import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kotlinlibrary.retrofitadapter.livedata.LiveDataCallAdapterFactory
+import com.kotlinlibrary.utils.ktx.genericType
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -24,7 +26,7 @@ val networkModule = module {
             .baseUrl(get<String>())
             .client(get<OkHttpClient>() )
             .addConverterFactory(get<GsonConverterFactory>())
-            .addCallAdapterFactory(LiveDataCallAdapterFactory())
+            .addCallAdapterFactory(LiveDataCallAdapterFactory(genericType<ErrorEnvelope>()))
             .build()
     }
 }

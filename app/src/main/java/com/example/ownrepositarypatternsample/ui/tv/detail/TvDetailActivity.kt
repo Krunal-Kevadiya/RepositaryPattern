@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
@@ -56,22 +57,23 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
     private fun initializeUI() {
         applyToolbarMargin(mBinding.tvDetailToolbar)
         simpleToolbarWithHome(mBinding.tvDetailToolbar, getTvFromIntent().name)
-        getTvFromIntent().backdrop_path?.let {
+        getTvFromIntent().backdropPath?.let {
             Glide.with(this).load(Api.getBackdropPath(it))
                     .listener(requestGlideListener(mBinding.tvDetailPoster))
                     .into(mBinding.tvDetailPoster)
         } ?: let {
-            Glide.with(this).load(Api.getBackdropPath(getTvFromIntent().poster_path!!))
+            Glide.with(this).load(Api.getBackdropPath(getTvFromIntent().posterPath!!))
                     .listener(requestGlideListener(mBinding.tvDetailPoster))
                     .into(mBinding.tvDetailPoster)
         }
 
         mBinding.incHeader.detailHeaderTitle.text = getTvFromIntent().name
-        mBinding.incHeader.detailHeaderRelease.text = "First Air Date : ${getTvFromIntent().first_air_date}"
-        mBinding.incHeader.detailHeaderStar.rating = getTvFromIntent().vote_average / 2
+        mBinding.incHeader.detailHeaderRelease.text = "First Air Date : ${getTvFromIntent().firstAirDate}"
+        mBinding.incHeader.detailHeaderStar.rating = getTvFromIntent().voteAverage / 2
         mBinding.incBody.detailBodySummary.text = getTvFromIntent().overview
 
         videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
+            withLayoutManager(LinearLayoutManager(this@TvDetailActivity, LinearLayoutManager.HORIZONTAL, false))
             withLayoutResId(R.layout.item_video)
             onBind<ItemVideoBinding>(BR.data) { _, item ->
                 item.key?.let {
@@ -115,7 +117,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                     mBinding.incBody.detailBodyTags.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }
@@ -130,7 +132,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }
@@ -145,7 +147,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
-            Status.ERROR -> toast(resource.errorEnvelope?.statusMessage.toString())
+            Status.ERROR -> toast(resource.message.toString())
             Status.LOADING -> { }
         }
     }

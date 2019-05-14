@@ -12,6 +12,7 @@ import com.kotlinlibrary.utils.ktx.setContentBindView
 abstract class BaseActivity<VDB : ViewDataBinding, BVM : BaseViewModel>: AppCompatActivity() {
     protected lateinit var mBinding: VDB
     protected abstract val mViewModel: BVM
+    //protected val mViewModel: BVM by viewModel<BVM>()
     protected lateinit var mContext: Context
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {

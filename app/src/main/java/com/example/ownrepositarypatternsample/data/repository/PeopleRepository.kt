@@ -5,14 +5,16 @@ import androidx.lifecycle.MutableLiveData
 import com.example.ownrepositarypatternsample.base.repository.NetworkBoundRepository
 import com.example.ownrepositarypatternsample.base.repository.Repository
 import com.example.ownrepositarypatternsample.base.Resource
+import com.example.ownrepositarypatternsample.base.repository.RepositoryType
 import com.example.ownrepositarypatternsample.data.local.dao.PeopleDao
-import com.example.ownrepositarypatternsample.data.local.entity.Person
+import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.mappers.PeopleResponseMapper
 import com.example.ownrepositarypatternsample.data.mappers.PersonDetailResponseMapper
-import com.example.ownrepositarypatternsample.data.remote.pojo.ApiResponse
+import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.example.ownrepositarypatternsample.data.remote.response.PeopleResponse
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.data.remote.service.PeopleService
+import com.kotlinlibrary.retrofitadapter.SealedApiResult
 import timber.log.Timber
 
 class PeopleRepository constructor(
@@ -24,8 +26,8 @@ class PeopleRepository constructor(
         Timber.d("Injection PeopleRepository")
     }
 
-    fun loadPeople(page: Int): LiveData<Resource<List<Person>>> {
-        return object : NetworkBoundRepository<List<Person>, PeopleResponse, PeopleResponseMapper>() {
+    fun loadPeople(page: Int): LiveData<Resource<List<People>>> {
+        return object : NetworkBoundRepository<List<People>, PeopleResponse, PeopleResponseMapper>(RepositoryType.Cached) {
             override fun saveFetchData(items: PeopleResponse) {
                 for(item in items.results) {
                     item.page = page
@@ -33,34 +35,36 @@ class PeopleRepository constructor(
                 peopleDao.insertPeople(items.results)
             }
 
-            override fun shouldFetch(data: List<Person>?): Boolean {
+            override fun shouldFetch(data: List<People>?): Boolean {
                 return data == null || data.isEmpty()
             }
 
-            override fun loadFromDb(): LiveData<List<Person>> {
+            override fun loadFromDb(): LiveData<List<People>> {
                 return peopleDao.getPeople(page_ = page)
             }
 
-            override fun fetchService(): LiveData<ApiResponse<PeopleResponse>> {
+            override fun loadFromNetwork(items: PeopleResponse): LiveData<List<People>> {
+                val result: MutableLiveData<List<People>> = MutableLiveData()
+                result.postValue(items.results)
+                return result
+            }
+
+            override fun fetchService(): LiveData<SealedApiResult<PeopleResponse, ErrorEnvelope>> {
                 return peopleService.fetchPopularPeople(page = page)
             }
 
             override fun mapper(): PeopleResponseMapper {
                 return PeopleResponseMapper()
             }
-
-            override fun onFetchFailed(message: String?) {
-                Timber.d("onFetchFailed : $message")
-            }
         }.asLiveData()
     }
 
     fun loadPersonDetail(id: Int): LiveData<Resource<PersonDetail>> {
-        return object : NetworkBoundRepository<PersonDetail, PersonDetail, PersonDetailResponseMapper>() {
+        return object : NetworkBoundRepository<PersonDetail, PersonDetail, PersonDetailResponseMapper>(RepositoryType.Cached) {
             override fun saveFetchData(items: PersonDetail) {
                 val person = peopleDao.getPerson(id_ = id)
                 person.personDetail = items
-                peopleDao.updatePerson(person = person)
+                peopleDao.updatePerson(people = person)
             }
 
             override fun shouldFetch(data: PersonDetail?): Boolean {
@@ -74,16 +78,18 @@ class PeopleRepository constructor(
                 return data
             }
 
-            override fun fetchService(): LiveData<ApiResponse<PersonDetail>> {
+            override fun loadFromNetwork(items: PersonDetail): LiveData<PersonDetail> {
+                val result: MutableLiveData<PersonDetail> = MutableLiveData()
+                result.postValue(items)
+                return result
+            }
+
+            override fun fetchService(): LiveData<SealedApiResult<PersonDetail, ErrorEnvelope>> {
                 return peopleService.fetchPersonDetail(id = id)
             }
 
             override fun mapper(): PersonDetailResponseMapper {
                 return PersonDetailResponseMapper()
-            }
-
-            override fun onFetchFailed(message: String?) {
-                Timber.d("onFetchFailed : $message")
             }
         }.asLiveData()
     }

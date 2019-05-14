@@ -32,7 +32,6 @@ val okHttpClientModule = module {
             .addInterceptor(get<HttpLoggingInterceptor>())
             .addInterceptor(ConnectivityInterceptor(get()))
             .addInterceptor(RequestInterceptor(get(), getProperty(Property.BASE_URL)))
-            //.addNetworkInterceptor(StethoInterceptor())
             .readTimeout(timeout.toLong(), TimeUnit.SECONDS)
             .writeTimeout(timeout.toLong(), TimeUnit.SECONDS)
             .connectTimeout(timeout.toLong(), TimeUnit.SECONDS)

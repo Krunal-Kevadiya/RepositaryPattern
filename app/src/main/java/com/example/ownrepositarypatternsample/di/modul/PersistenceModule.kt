@@ -8,7 +8,6 @@ import org.koin.dsl.module
 val persistenceModule = module {
     single {
         Room.databaseBuilder(get(), AppDatabase::class.java, DatabaseAnnotation.DATABASE_NAME)
-            .allowMainThreadQueries()
             .build()
     }
     single {

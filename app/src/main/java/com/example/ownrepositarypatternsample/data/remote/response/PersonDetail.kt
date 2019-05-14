@@ -1,7 +1,6 @@
 package com.example.ownrepositarypatternsample.data.remote.response
 
 import android.os.Parcelable
-import com.example.ownrepositarypatternsample.base.repository.NetworkResponseModel
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
@@ -12,4 +11,4 @@ data class PersonDetail(
     @SerializedName("place_of_birth") val placeOfBirth: String,
     @SerializedName("also_known_as") val alsoKnownAs: List<String>,
     @SerializedName("biography") val bioGraphy: String
-) : Parcelable, NetworkResponseModel
+) : Parcelable

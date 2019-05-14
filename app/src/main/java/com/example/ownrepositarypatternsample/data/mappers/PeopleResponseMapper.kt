@@ -5,6 +5,7 @@ import com.example.ownrepositarypatternsample.data.remote.response.PeopleRespons
 import timber.log.Timber
 
 class PeopleResponseMapper: NetworkResponseMapper<PeopleResponse> {
+    override fun onLoadPage(): Int  = 1
     override fun onLastPage(response: PeopleResponse): Boolean {
         Timber.d("loadPage : ${response.page}/${response.totalPages}")
         return response.page > response.totalPages

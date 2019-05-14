@@ -4,6 +4,7 @@ import com.example.ownrepositarypatternsample.base.repository.NetworkResponseMap
 import com.example.ownrepositarypatternsample.data.remote.response.KeywordListResponse
 
 class KeywordResponseMapper: NetworkResponseMapper<KeywordListResponse> {
+    override fun onLoadPage(): Int  = 1
     override fun onLastPage(response: KeywordListResponse): Boolean {
         return true
     }

@@ -25,15 +25,11 @@ class DiscoverRepository constructor(
     val tvDao: TvDao
 ) : Repository {
 
-    init {
-        Timber.d("Injection DiscoverRepository")
-    }
-
-    fun loadMovies(page: Int): LiveData<Resource<List<Movie>>> {
-        return object : NetworkBoundRepository<List<Movie>, DiscoverMovieResponse, MovieResponseMapper>(RepositoryType.Cached) {
+    fun loadMovies(): LiveData<Resource<List<Movie>>> {
+        return object : NetworkBoundRepository<List<Movie>, DiscoverMovieResponse, MovieResponseMapper>(RepositoryType.Database) {
             override fun saveFetchData(items: DiscoverMovieResponse) {
                 for(item in items.results) {
-                    item.page = page
+                    item.page = mapper().onLoadPage()
                 }
                 movieDao.insertMovieList(movies = items.results)
             }
@@ -43,7 +39,7 @@ class DiscoverRepository constructor(
             }
 
             override fun loadFromDb(): LiveData<List<Movie>> {
-                return movieDao.getMovieList(page_ = page)
+                return movieDao.getMovieList(page_ = mapper().onLoadPage())
             }
 
             override fun loadFromNetwork(items: DiscoverMovieResponse): LiveData<List<Movie>> {
@@ -53,7 +49,7 @@ class DiscoverRepository constructor(
             }
 
             override fun fetchService(): LiveData<SealedApiResult<DiscoverMovieResponse, ErrorEnvelope>> {
-                return discoverService.fetchDiscoverMovie(page = page)
+                return discoverService.fetchDiscoverMovie(page = mapper().onLoadPage())
             }
 
             override fun mapper(): MovieResponseMapper {

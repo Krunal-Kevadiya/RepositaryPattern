@@ -53,9 +53,6 @@ abstract class NetworkBoundRepository<
                     fetchFromRepositoryAndCached(loadedFromDB)
                 }
             }
-            else -> {
-                setValue(Resource.error("Please select proper repository type", null, false))
-            }
         }
     }
 
@@ -151,18 +148,18 @@ abstract class NetworkBoundRepository<
     @WorkerThread
     protected abstract fun saveFetchData(items: RequestType)
 
-    @MainThread
+    @WorkerThread
     protected abstract fun shouldFetch(data: ResultType?): Boolean
 
-    @MainThread
+    @WorkerThread
     protected abstract fun loadFromDb(): LiveData<ResultType>
 
-    @MainThread
+    @WorkerThread
     protected abstract fun loadFromNetwork(items: RequestType): LiveData<ResultType>
 
-    @MainThread
+    @WorkerThread
     protected abstract fun fetchService(): LiveData<SealedApiResult<RequestType, ErrorEnvelope>>
 
-    @MainThread
+    @WorkerThread
     protected abstract fun mapper(): Mapper
 }

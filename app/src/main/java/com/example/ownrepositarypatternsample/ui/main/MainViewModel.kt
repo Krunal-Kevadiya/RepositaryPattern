@@ -16,8 +16,8 @@ class MainViewModel(
     private val discoverRepository: DiscoverRepository,
     private val peopleRepository: PeopleRepository
 ) : BaseViewModel() {
-    private var moviePageLiveData: MutableLiveData<Int> = MutableLiveData()
-    private val movieListLiveData: LiveData<Resource<List<Movie>>>
+    //private var moviePageLiveData: MutableLiveData<Int> = MutableLiveData()
+    private var movieListLiveData: LiveData<Resource<List<Movie>>> = AbsentLiveData.create()
 
     private var tvPageLiveData: MutableLiveData<Int> = MutableLiveData()
     private val tvListLiveData: LiveData<Resource<List<Tv>>>
@@ -26,9 +26,9 @@ class MainViewModel(
     private val peopleLiveData: LiveData<Resource<List<People>>>
 
     init {
-        movieListLiveData = Transformations.switchMap(moviePageLiveData) {
+        /*movieListLiveData = Transformations.switchMap(moviePageLiveData) {
             moviePageLiveData.value?.let { discoverRepository.loadMovies(it) } ?: AbsentLiveData.create()
-        }
+        }*/
 
         tvListLiveData = Transformations.switchMap(tvPageLiveData) {
             tvPageLiveData.value?.let { discoverRepository.loadTvs(it) } ?: AbsentLiveData.create()
@@ -42,12 +42,7 @@ class MainViewModel(
     fun getMovieListObservable() = movieListLiveData
     fun getMovieListValues() = getMovieListObservable().value
     fun postMoviePage() {
-        if(moviePageLiveData.value != null) {
-            val page: Int = moviePageLiveData.value!! + 1
-            moviePageLiveData.postValue(page)
-        } else {
-            moviePageLiveData.postValue(1)
-        }
+        movieListLiveData = discoverRepository.loadMovies()
     }
 
     fun getTvListObservable() = tvListLiveData

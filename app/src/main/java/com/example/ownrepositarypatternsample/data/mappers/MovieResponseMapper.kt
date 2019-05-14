@@ -5,8 +5,12 @@ import com.example.ownrepositarypatternsample.data.remote.response.DiscoverMovie
 import timber.log.Timber
 
 class MovieResponseMapper: NetworkResponseMapper<DiscoverMovieResponse> {
+    var page = 1
+
+    override fun onLoadPage(): Int = page
+
     override fun onLastPage(response: DiscoverMovieResponse): Boolean {
-        Timber.d("loadPage : ${response.page}/${response.totalPages}")
+        page++
         return response.page > response.totalPages
     }
 }

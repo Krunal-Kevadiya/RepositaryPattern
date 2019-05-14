@@ -17,5 +17,5 @@ class MainPagerAdapter(fm: FragmentManager): FragmentPagerAdapter(fm) {
         }
     }
 
-    override fun getCount() = 3
+    override fun getCount() = 1
 }

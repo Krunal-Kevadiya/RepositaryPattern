@@ -4,6 +4,7 @@ import com.example.ownrepositarypatternsample.base.repository.NetworkResponseMap
 import com.example.ownrepositarypatternsample.data.remote.response.ReviewListResponse
 
 class ReviewResponseMapper: NetworkResponseMapper<ReviewListResponse> {
+    override fun onLoadPage(): Int  = 1
     override fun onLastPage(response: ReviewListResponse): Boolean {
         return true
     }

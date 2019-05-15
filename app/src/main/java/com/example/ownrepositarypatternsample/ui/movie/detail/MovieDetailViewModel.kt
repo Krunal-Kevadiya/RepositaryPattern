@@ -10,10 +10,16 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyw
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.repository.MovieRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 class MovieDetailViewModel(
     private val repository: MovieRepository
 ) : BaseViewModel() {
+    private val job = SupervisorJob()
+    private val ioScope = CoroutineScope(job + Dispatchers.IO)
+
     private val keywordIdLiveData: MutableLiveData<Int> = MutableLiveData()
     private val keywordListLiveData: LiveData<Resource<List<Keyword>>>
 
@@ -25,15 +31,15 @@ class MovieDetailViewModel(
 
     init {
         keywordListLiveData = Transformations.switchMap(keywordIdLiveData) {
-            keywordIdLiveData.value?.let { repository.loadKeywordList(it) } ?: AbsentLiveData.create()
+            keywordIdLiveData.value?.let { repository.loadKeywordList(it, ioScope) } ?: AbsentLiveData.create()
         }
 
         videoListLiveData = Transformations.switchMap(videoIdLiveData) {
-            videoIdLiveData.value?.let { repository.loadVideoList(it) } ?: AbsentLiveData.create()
+            videoIdLiveData.value?.let { repository.loadVideoList(it, ioScope) } ?: AbsentLiveData.create()
         }
 
         reviewListLiveData = Transformations.switchMap(reviewIdLiveData) {
-            reviewIdLiveData.value?.let { repository.loadReviewsList(it) } ?: AbsentLiveData.create()
+            reviewIdLiveData.value?.let { repository.loadReviewsList(it, ioScope) } ?: AbsentLiveData.create()
         }
     }
 
@@ -45,4 +51,9 @@ class MovieDetailViewModel(
 
     fun getReviewListObservable() = reviewListLiveData
     fun postReviewId(id: Int) = reviewIdLiveData.postValue(id)
+
+    override fun onCleared() {
+        super.onCleared()
+        job.cancel()
+    }
 }

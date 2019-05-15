@@ -1,36 +1,32 @@
 package com.example.ownrepositarypatternsample.data.repository
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.ownrepositarypatternsample.base.repository.NetworkBoundRepository
-import com.example.ownrepositarypatternsample.base.repository.Repository
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.repository.RepositoryType
 import com.example.ownrepositarypatternsample.data.local.dao.PeopleDao
 import com.example.ownrepositarypatternsample.data.local.entity.People
-import com.example.ownrepositarypatternsample.data.mappers.PeopleResponseMapper
-import com.example.ownrepositarypatternsample.data.mappers.PersonDetailResponseMapper
 import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.example.ownrepositarypatternsample.data.remote.response.PeopleResponse
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.data.remote.service.PeopleService
 import com.kotlinlibrary.retrofitadapter.SealedApiResult
-import timber.log.Timber
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 
 class PeopleRepository constructor(
     val peopleService: PeopleService,
     val peopleDao: PeopleDao
-) : Repository {
+) {
 
-    init {
-        Timber.d("Injection PeopleRepository")
-    }
-
-    fun loadPeople(page: Int): LiveData<Resource<List<People>>> {
-        return object : NetworkBoundRepository<List<People>, PeopleResponse, PeopleResponseMapper>(RepositoryType.Cached) {
-            override fun saveFetchData(items: PeopleResponse) {
+    private var peoplePageNumber: Int = 1
+    fun loadPeople(ioScope: CoroutineScope): LiveData<Resource<List<People>>> {
+        return object : NetworkBoundRepository<List<People>, PeopleResponse>(
+            RepositoryType.Cached, ioScope, true
+        ) {
+            override suspend fun saveFetchData(items: PeopleResponse) {
                 for(item in items.results) {
-                    item.page = page
+                    item.page = peoplePageNumber
                 }
                 peopleDao.insertPeople(items.results)
             }
@@ -39,29 +35,30 @@ class PeopleRepository constructor(
                 return data == null || data.isEmpty()
             }
 
-            override fun loadFromDb(): LiveData<List<People>> {
-                return peopleDao.getPeople(page_ = page)
+            override suspend fun loadFromDb(): List<People>? {
+                return peopleDao.getPeople(page_ = peoplePageNumber)
             }
 
-            override fun loadFromNetwork(items: PeopleResponse): LiveData<List<People>> {
-                val result: MutableLiveData<List<People>> = MutableLiveData()
-                result.postValue(items.results)
-                return result
+            override fun loadFromNetwork(items: PeopleResponse): List<People>? {
+                return items.results
             }
 
-            override fun fetchService(): LiveData<SealedApiResult<PeopleResponse, ErrorEnvelope>> {
-                return peopleService.fetchPopularPeople(page = page)
+            override fun fetchService(): Deferred<SealedApiResult<PeopleResponse, ErrorEnvelope>> {
+                return peopleService.fetchPopularPeople(page = peoplePageNumber)
             }
 
-            override fun mapper(): PeopleResponseMapper {
-                return PeopleResponseMapper()
+            override fun onLastPage(data: PeopleResponse): Boolean {
+                peoplePageNumber++
+                return data.page > data.totalPages
             }
         }.asLiveData()
     }
 
-    fun loadPersonDetail(id: Int): LiveData<Resource<PersonDetail>> {
-        return object : NetworkBoundRepository<PersonDetail, PersonDetail, PersonDetailResponseMapper>(RepositoryType.Cached) {
-            override fun saveFetchData(items: PersonDetail) {
+    fun loadPersonDetail(id: Int, ioScope: CoroutineScope): LiveData<Resource<PersonDetail>> {
+        return object : NetworkBoundRepository<PersonDetail, PersonDetail>(
+            RepositoryType.Cached, ioScope, false
+        ) {
+            override suspend fun saveFetchData(items: PersonDetail) {
                 val person = peopleDao.getPerson(id_ = id)
                 person.personDetail = items
                 peopleDao.updatePerson(people = person)
@@ -71,25 +68,21 @@ class PeopleRepository constructor(
                 return data == null || data.bioGraphy.isEmpty()
             }
 
-            override fun loadFromDb(): LiveData<PersonDetail> {
+            override suspend fun loadFromDb(): PersonDetail? {
                 val person = peopleDao.getPerson(id_ = id)
-                val data : MutableLiveData<PersonDetail> = MutableLiveData()
-                data.value = person.personDetail
-                return data
+                return person.personDetail
             }
 
-            override fun loadFromNetwork(items: PersonDetail): LiveData<PersonDetail> {
-                val result: MutableLiveData<PersonDetail> = MutableLiveData()
-                result.postValue(items)
-                return result
+            override fun loadFromNetwork(items: PersonDetail): PersonDetail? {
+                return items
             }
 
-            override fun fetchService(): LiveData<SealedApiResult<PersonDetail, ErrorEnvelope>> {
+            override fun fetchService(): Deferred<SealedApiResult<PersonDetail, ErrorEnvelope>> {
                 return peopleService.fetchPersonDetail(id = id)
             }
 
-            override fun mapper(): PersonDetailResponseMapper {
-                return PersonDetailResponseMapper()
+            override fun onLastPage(data: PersonDetail): Boolean {
+                return true
             }
         }.asLiveData()
     }

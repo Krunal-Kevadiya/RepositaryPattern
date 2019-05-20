@@ -9,10 +9,8 @@ import com.example.ownrepositarypatternsample.base.BaseFragment
 import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.local.entity.People
-import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.person.detail.PersonDetailActivity
-import com.example.ownrepositarypatternsample.utils.extension.currentScope
 import com.kotlinlibrary.loadmore.item.ErrorItem
 import com.kotlinlibrary.loadmore.item.LoadingItem
 import com.kotlinlibrary.loadmore.paginate.Direction
@@ -25,9 +23,10 @@ import com.example.ownrepositarypatternsample.databinding.MainFragmentStarBindin
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
 import org.jetbrains.anko.toast
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>() {
-    override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
+    override val mViewModel: MainViewModel by viewModel()
     private var adapter: SingleBindingAdapter<People>? = null
     private lateinit var noPaginate: NoPaginate
 

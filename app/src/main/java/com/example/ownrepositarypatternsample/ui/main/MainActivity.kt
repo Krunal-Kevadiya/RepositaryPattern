@@ -8,11 +8,11 @@ import androidx.viewpager.widget.ViewPager
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseActivity
 import com.example.ownrepositarypatternsample.databinding.ActivityMainBinding
-import com.example.ownrepositarypatternsample.utils.extension.currentScope
 import devlight.io.library.ntb.NavigationTabBar
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
-    override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
+    override val mViewModel: MainViewModel by viewModel()
 
     override fun getLayoutId(): Int = R.layout.activity_main
 

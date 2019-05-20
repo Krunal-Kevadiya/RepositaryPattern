@@ -14,10 +14,8 @@ import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
 import com.example.ownrepositarypatternsample.databinding.ItemMovieBinding
 import com.example.ownrepositarypatternsample.databinding.MainFragmentMovieBinding
-import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.movie.detail.MovieDetailActivity
-import com.example.ownrepositarypatternsample.utils.extension.currentScope
 import com.github.florent37.glidepalette.BitmapPalette
 import com.github.florent37.glidepalette.GlidePalette
 import com.kotlinlibrary.loadmore.item.ErrorItem
@@ -29,10 +27,11 @@ import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
 import org.jetbrains.anko.toast
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>() {
-    override val mViewModel: MainViewModel by currentScope<MainActivity>().inject()
+    override val mViewModel: MainViewModel by viewModel()
     private var adapter: SingleBindingAdapter<Movie>? = null
     private lateinit var noPaginate: NoPaginate
 

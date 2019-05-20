@@ -3,6 +3,7 @@ package com.example.ownrepositarypatternsample.ui.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import androidx.lifecycle.viewModelScope
 import com.example.ownrepositarypatternsample.base.repository.AbsentLiveData
 import com.example.ownrepositarypatternsample.base.BaseViewModel
 import com.example.ownrepositarypatternsample.base.Resource
@@ -26,6 +27,7 @@ class MainViewModel(
     private val peopleLiveData: LiveData<Resource<List<People>>>
 
     init {
+        viewModelScope
         /*movieListLiveData = Transformations.switchMap(moviePageLiveData) {
             moviePageLiveData.value?.let { discoverRepository.loadMovies(it) } ?: AbsentLiveData.create()
         }*/

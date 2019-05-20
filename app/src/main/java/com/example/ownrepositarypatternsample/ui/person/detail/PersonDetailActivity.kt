@@ -23,16 +23,16 @@ import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.databinding.ActivityPersonDetailBinding
-import com.example.ownrepositarypatternsample.utils.extension.currentScope
 import com.kotlinlibrary.utils.ktx.fromApi
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.toApi
 import com.kotlinlibrary.utils.ktx.visible
 import org.jetbrains.anko.startActivityForResult
 import org.jetbrains.anko.toast
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDetailViewModel>() {
-    override val mViewModel: PersonDetailViewModel by currentScope<PersonDetailActivity>().inject()
+    override val mViewModel: PersonDetailViewModel by viewModel()
 
     override fun getLayoutId(): Int = R.layout.activity_person_detail
 

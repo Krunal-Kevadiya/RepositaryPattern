@@ -1,7 +1,6 @@
 package com.example.ownrepositarypatternsample.data.remote.response
 
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
-import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.google.gson.annotations.SerializedName
 
 data class DiscoverMovieResponse(

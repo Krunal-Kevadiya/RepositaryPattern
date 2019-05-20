@@ -10,10 +10,16 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyw
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.repository.TvRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 class TvDetailViewModel(
     private val repository: TvRepository
 ) : BaseViewModel() {
+    private val job = SupervisorJob()
+    private val ioScope = CoroutineScope(job + Dispatchers.IO)
+
     private val keywordIdLiveData: MutableLiveData<Int> = MutableLiveData()
     private val keywordListLiveData: LiveData<Resource<List<Keyword>>>
 
@@ -25,16 +31,16 @@ class TvDetailViewModel(
 
     init {
         keywordListLiveData = Transformations.switchMap(keywordIdLiveData) {
-            keywordIdLiveData.value?.let { repository.loadKeywordList(it) }
+            keywordIdLiveData.value?.let { repository.loadKeywordList(it, ioScope) }
                 ?: AbsentLiveData.create()
         }
 
         videoListLiveData = Transformations.switchMap(videoIdLiveData) {
-            videoIdLiveData.value?.let { repository.loadVideoList(it) } ?: AbsentLiveData.create()
+            videoIdLiveData.value?.let { repository.loadVideoList(it, ioScope) } ?: AbsentLiveData.create()
         }
 
         reviewListLiveData = Transformations.switchMap(reviewIdLiveData) {
-            reviewIdLiveData.value?.let { repository.loadReviewsList(it) }
+            reviewIdLiveData.value?.let { repository.loadReviewsList(it, ioScope) }
                 ?: AbsentLiveData.create()
         }
     }
@@ -47,4 +53,9 @@ class TvDetailViewModel(
 
     fun getReviewListObservable() = reviewListLiveData
     fun postReviewId(id: Int) = reviewIdLiveData.postValue(id)
+
+    override fun onCleared() {
+        super.onCleared()
+        job.cancel()
+    }
 }

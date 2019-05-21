@@ -2,8 +2,8 @@ package com.example.ownrepositarypatternsample.data.repository
 
 import androidx.lifecycle.LiveData
 import com.example.ownrepositarypatternsample.base.repository.NetworkBoundRepository
-import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.repository.RepositoryType
+import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.local.dao.MovieDao
 import com.example.ownrepositarypatternsample.data.local.dao.TvDao
 import com.example.ownrepositarypatternsample.data.local.entity.Movie
@@ -19,17 +19,17 @@ import kotlinx.coroutines.Deferred
 class DiscoverRepository constructor(
     val discoverService: TheDiscoverService,
     val movieDao: MovieDao,
-    val tvDao: TvDao
+    val tvDao: TvDao,
+    val ioScope: CoroutineScope
 ) {
 
-    private var moviePageNumber: Int = 1
-    fun loadMovies(ioScope: CoroutineScope): LiveData<Resource<List<Movie>>> {
+    fun loadMovies(page: Int): LiveData<ScreenState<List<Movie>>> {
         return object : NetworkBoundRepository<List<Movie>, DiscoverMovieResponse>(
-            RepositoryType.Cached, ioScope, true
+            RepositoryType.Cached, ioScope, page
         ) {
             override suspend fun saveFetchData(items: DiscoverMovieResponse) {
                 for (item in items.results) {
-                    item.page = moviePageNumber
+                    item.page = page
                 }
                 movieDao.insertMovieList(movies = items.results)
             }
@@ -39,7 +39,7 @@ class DiscoverRepository constructor(
             }
 
             override suspend fun loadFromDb(): List<Movie>? {
-                return movieDao.getMovieList(moviePageNumber)
+                return movieDao.getMovieList(page)
             }
 
             override fun loadFromNetwork(items: DiscoverMovieResponse): List<Movie>? {
@@ -47,24 +47,22 @@ class DiscoverRepository constructor(
             }
 
             override fun fetchService(): Deferred<SealedApiResult<DiscoverMovieResponse, ErrorEnvelope>> {
-                return discoverService.fetchDiscoverMovie(page = moviePageNumber)
+                return discoverService.fetchDiscoverMovie(page = page)
             }
 
             override fun onLastPage(data: DiscoverMovieResponse): Boolean {
-                moviePageNumber++
                 return data.page > data.totalPages
             }
         }.asLiveData()
     }
 
-    private var tvPageNumber: Int = 1
-    fun loadTvs(ioScope: CoroutineScope): LiveData<Resource<List<Tv>>> {
+    fun loadTvs(page: Int): LiveData<ScreenState<List<Tv>>> {
         return object : NetworkBoundRepository<List<Tv>, DiscoverTvResponse>(
-            RepositoryType.Cached, ioScope, true
+            RepositoryType.Cached, ioScope, page
         ) {
             override suspend fun saveFetchData(items: DiscoverTvResponse) {
                 for (item in items.results) {
-                    item.page = tvPageNumber
+                    item.page = page
                 }
                 tvDao.insertTv(tvs = items.results)
             }
@@ -74,7 +72,7 @@ class DiscoverRepository constructor(
             }
 
             override suspend fun loadFromDb(): List<Tv>? {
-                return tvDao.getTvList(page_ = tvPageNumber)
+                return tvDao.getTvList(page_ = page)
             }
 
             override fun loadFromNetwork(items: DiscoverTvResponse): List<Tv>? {
@@ -82,11 +80,10 @@ class DiscoverRepository constructor(
             }
 
             override fun fetchService(): Deferred<SealedApiResult<DiscoverTvResponse, ErrorEnvelope>> {
-                return discoverService.fetchDiscoverTv(page = tvPageNumber)
+                return discoverService.fetchDiscoverTv(page = page)
             }
 
             override fun onLastPage(data: DiscoverTvResponse): Boolean {
-                tvPageNumber++
                 return data.page > data.totalPages
             }
         }.asLiveData()

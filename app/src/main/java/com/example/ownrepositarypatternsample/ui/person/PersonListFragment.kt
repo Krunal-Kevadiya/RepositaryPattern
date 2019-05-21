@@ -6,8 +6,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseFragment
-import com.example.ownrepositarypatternsample.base.Resource
-import com.example.ownrepositarypatternsample.base.Status
+import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.person.detail.PersonDetailActivity
@@ -17,7 +16,6 @@ import com.kotlinlibrary.loadmore.paginate.Direction
 import com.kotlinlibrary.loadmore.paginate.NoPaginate
 import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
-import timber.log.Timber
 import com.example.ownrepositarypatternsample.databinding.ItemPersonBinding
 import com.example.ownrepositarypatternsample.databinding.MainFragmentStarBinding
 import com.kotlinlibrary.utils.ktx.observeLiveData
@@ -75,27 +73,31 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
         super.onDestroy()
     }
 
-    private fun updatePeople(resource: Resource<List<People>>) {
-        when(resource.status) {
-            Status.SUCCESS ->  {
-                Timber.e("Load People List ${resource.data}")
+    private fun updatePeople(resource: ScreenState<List<People>>) {
+        when(resource) {
+            is ScreenState.LoadingState.ShowInitial -> {
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
+            }
+            is ScreenState.LoadingState.ShowOnDemand -> {
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
+            }
+            is ScreenState.LoadingState.HideInitial -> {
                 noPaginate.showLoading(false)
-                noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)
+            }
+            is ScreenState.LoadingState.HideOnDemand -> {
+                noPaginate.showLoading(false)
+            }
+            is ScreenState.SuccessState.Api -> {
+                noPaginate.setNoMoreItems(resource.onLastPage)
                 resource.data?.let {
                     adapter?.addAll(it.toMutableList())
                 }
             }
-            Status.ERROR -> {
-                Timber.e("Error People List")
-                mContext.toast(resource.message.toString())
-                noPaginate.showLoading(false)
+            is ScreenState.ErrorState.Api -> {
                 noPaginate.showError(true)
-                noPaginate.setNoMoreItems(mViewModel.getPeopleListValues()?.onLastPage!!)
-            }
-            Status.LOADING -> {
-                Timber.e("Loading People List")
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
+                mContext.toast(resource.message)
             }
         }
     }

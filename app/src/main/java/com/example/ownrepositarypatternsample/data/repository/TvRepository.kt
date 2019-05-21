@@ -2,8 +2,8 @@ package com.example.ownrepositarypatternsample.data.repository
 
 import androidx.lifecycle.LiveData
 import com.example.ownrepositarypatternsample.base.repository.NetworkBoundRepository
-import com.example.ownrepositarypatternsample.base.Resource
 import com.example.ownrepositarypatternsample.base.repository.RepositoryType
+import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.local.dao.TvDao
 import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.example.ownrepositarypatternsample.data.remote.response.KeywordListResponse
@@ -19,11 +19,12 @@ import kotlinx.coroutines.Deferred
 
 class TvRepository constructor(
     val service: TvService,
-    val tvDao: TvDao
+    val tvDao: TvDao,
+    val ioScope: CoroutineScope
 ) {
-    fun loadKeywordList(id: Int, ioScope: CoroutineScope): LiveData<Resource<List<Keyword>>> {
+    fun loadKeywordList(id: Int): LiveData<ScreenState<List<Keyword>>> {
         return object: NetworkBoundRepository<List<Keyword>, KeywordListResponse>(
-            RepositoryType.Cached, ioScope, false
+            RepositoryType.Cached, ioScope
         ) {
             override suspend fun saveFetchData(items: KeywordListResponse) {
                 val tv = tvDao.getTv(id_ = id)
@@ -54,9 +55,9 @@ class TvRepository constructor(
         }.asLiveData()
     }
 
-    fun loadVideoList(id: Int, ioScope: CoroutineScope): LiveData<Resource<List<Video>>> {
+    fun loadVideoList(id: Int): LiveData<ScreenState<List<Video>>> {
         return object : NetworkBoundRepository<List<Video>, VideoListResponse>(
-            RepositoryType.Cached, ioScope, false
+            RepositoryType.Cached, ioScope
         ) {
             override suspend fun saveFetchData(items: VideoListResponse) {
                 val tv = tvDao.getTv(id_ = id)
@@ -87,9 +88,9 @@ class TvRepository constructor(
         }.asLiveData()
     }
 
-    fun loadReviewsList(id: Int, ioScope: CoroutineScope): LiveData<Resource<List<Review>>> {
+    fun loadReviewsList(id: Int): LiveData<ScreenState<List<Review>>> {
         return object: NetworkBoundRepository<List<Review>, ReviewListResponse>(
-            RepositoryType.Cached, ioScope, false
+            RepositoryType.Cached, ioScope
         ) {
             override suspend fun saveFetchData(items: ReviewListResponse) {
                 val tv = tvDao.getTv(id_ = id)

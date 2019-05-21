@@ -9,8 +9,7 @@ import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseActivity
-import com.example.ownrepositarypatternsample.base.Resource
-import com.example.ownrepositarypatternsample.base.Status
+import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyword
@@ -109,23 +108,24 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
         mBinding.incBody.detailBodyRecyclerViewReviews.setHasFixedSize(true)
     }
 
-    private fun updateKeywordList(resource: Resource<List<Keyword>>) {
-        when(resource.status) {
-            Status.SUCCESS -> {
+    private fun updateKeywordList(resource: ScreenState<List<Keyword>>) {
+        when(resource) {
+            is ScreenState.SuccessState.Api -> {
                 mBinding.incBody.detailBodyTags.tags = KeywordListMapper.mapToStringList(resource.data!!)
 
-                if(resource.data.isNotEmpty()) {
+                if(!resource.data.isNullOrEmpty()) {
                     mBinding.incBody.detailBodyTags.visible()
                 }
             }
-            Status.ERROR -> toast(resource.message.toString())
-            Status.LOADING -> { }
+            is ScreenState.ErrorState.Api -> {
+                toast(resource.message)
+            }
         }
     }
 
-    private fun updateVideoList(resource: Resource<List<Video>>) {
-        when(resource.status) {
-            Status.SUCCESS -> {
+    private fun updateVideoList(resource: ScreenState<List<Video>>) {
+        when(resource) {
+            is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
                     videoAdapter?.addAll(it.toMutableList())
 
@@ -133,14 +133,15 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
-            Status.ERROR -> toast(resource.message.toString())
-            Status.LOADING -> { }
+            is ScreenState.ErrorState.Api -> {
+                toast(resource.message)
+            }
         }
     }
 
-    private fun updateReviewList(resource: Resource<List<Review>>) {
-        when(resource.status) {
-            Status.SUCCESS -> {
+    private fun updateReviewList(resource: ScreenState<List<Review>>) {
+        when(resource) {
+            is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
                     reviewAdapter?.addAll(it.toMutableList())
 
@@ -148,8 +149,9 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
-            Status.ERROR -> toast(resource.message.toString())
-            Status.LOADING -> { }
+            is ScreenState.ErrorState.Api -> {
+                toast(resource.message)
+            }
         }
     }
 

@@ -1,59 +1,163 @@
 package com.example.ownrepositarypatternsample.base.repository
 
+import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.ownrepositarypatternsample.base.Resource
-import com.example.ownrepositarypatternsample.base.Status
 import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.kotlinlibrary.retrofitadapter.SealedApiResult
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.launch
 
-abstract class NetworkBoundRepository<ResultType, ResponseType> constructor(
-    private val repositoryType: RepositoryType,
+abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread constructor(
+    repositoryType: RepositoryType,
     private val ioScope: CoroutineScope,
-    private val isPaginationRepo: Boolean = false
+    private val page: Int = -1
 ) {
-    companion object {
-        const val MSG_ERROR_UNKNOWN = "Error Unknown"
+    private val MSG_ERROR_UNKNOWN = "Error Unknown"
+    private val result = MediatorLiveData<ScreenState<ResultType>>()
+    fun asLiveData() = result as LiveData<ScreenState<ResultType>>
+ 
+    init {
+        when (repositoryType) {
+            RepositoryType.Network -> {
+                fetchFromNetwork()
+            }
+            RepositoryType.Database -> {
+                fetchFromDatabase()
+            }
+            RepositoryType.Repository -> {
+                fetchFromRepository()
+            }
+            RepositoryType.Cached -> {
+                fetchFromCached()
+            }
+        }
     }
 
-    private val result: MediatorLiveData<Resource<ResultType>> = MediatorLiveData()
-
-    private fun MediatorLiveData<Resource<ResultType>>.addSources(
-        status: Status,
-        liveData: LiveData<ResultType>? = null,
-        onLastPage: Boolean = false,
-        msgError: String? = null
-    ) {
-        when (status) {
-            Status.LOADING -> {
-                this.postValue(Resource.loading())
-            }
-            Status.SUCCESS -> {
-                liveData?.let { list ->
-                    this.addSource<ResultType>(list) {
-                        it?.let { newData ->
-                            this.postValue(Resource.success(newData, onLastPage))
+    private fun fetchFromNetwork() {
+        addProgress()
+        ioScope.launch {
+            val apiResponse = fetchService()!!.await().toLiveData()
+            result.addSources(apiResponse) { response ->
+                when (response) {
+                    is SealedApiResult.Some.Success2XX.Ok200 -> {
+                        response.body?.let { body ->
+                            removeProgress()
+                            addSuccess(loadFromNetwork(body), onLastPage(body))
                         }
                     }
-                }
-            }
-            Status.ERROR -> {
-                liveData?.let { list ->
-                    this.addSource<ResultType>(list) {
-                        it?.let { newData ->
-                            this.postValue(Resource.error(msgError ?: MSG_ERROR_UNKNOWN, newData, onLastPage))
-                        }
-                    }
+                    is SealedApiResult.Some -> addFailure(response.errorBody?.statusMessage)
+                    is SealedApiResult.NetworkError -> addFailure(response.e.message)
+                    else -> addFailure(MSG_ERROR_UNKNOWN)
                 }
             }
         }
     }
 
-    fun asLiveData(): LiveData<Resource<ResultType>> {
-        initLiveData()
-        return result
+    private fun fetchFromDatabase() {
+        addProgress()
+        ioScope.launch {
+            val loadedFromDB = loadFromDb()
+            result.addSource(loadedFromDB.toLiveData()) { response ->
+                removeProgress()
+                addSuccess(response, loadedFromDB == null)
+            }
+        }
+    }
+
+    private fun fetchFromRepository() {
+        addProgress()
+        ioScope.launch {
+            val loadedFromDB: LiveData<ResultType> = loadFromDb().toLiveData()
+            result.addSources(loadedFromDB) { response ->
+                if (shouldFetch(response)) {
+                    fetchFromServerAndCached()
+                } else {
+                    removeProgress()
+                    addSuccess(response, false)
+                }
+            }
+        }
+    }
+
+    private fun fetchFromCached() {
+        addProgress()
+        ioScope.launch {
+            val loadedFromDB = loadFromDb().toLiveData()
+            result.addSources(loadedFromDB) { response ->
+                addSuccess(response, false)
+                fetchFromServerAndCached()
+            }
+        }
+    }
+
+    private fun fetchFromServerAndCached() {
+        ioScope.launch {
+            val apiResponse = fetchService()!!.await().toLiveData()
+            result.addSources(apiResponse) { response ->
+                when (response) {
+                    is SealedApiResult.Some.Success2XX.Ok200 -> {
+                        response.body?.let { body ->
+                            ioScope.launch {
+                                saveFetchData(body)
+                                removeProgress()
+                                addSuccess(loadFromDb(), onLastPage(body))
+                            }
+                        }
+                    }
+                    is SealedApiResult.Some -> addFailure(response.errorBody?.statusMessage)
+                    is SealedApiResult.NetworkError -> addFailure(response.e.message)
+                    else -> addFailure(MSG_ERROR_UNKNOWN)
+                }
+            }
+        }
+    }
+
+    @WorkerThread
+    open suspend fun saveFetchData(items: RequestType) {}
+    @WorkerThread
+    open suspend fun loadFromDb(): ResultType? = null
+    @WorkerThread
+    open fun onLastPage(data: RequestType): Boolean = false
+    @WorkerThread
+    open fun shouldFetch(data: ResultType?): Boolean = false
+    @WorkerThread
+    open fun loadFromNetwork(items: RequestType): ResultType? = null
+    @WorkerThread
+    open fun fetchService(): Deferred<SealedApiResult<RequestType, ErrorEnvelope>>? = null
+
+    private fun addProgress() {
+        if(page == 1)
+            result.addSources(ScreenState.LoadingState.ShowInitial<ResultType>().toLiveData())
+        else
+            result.addSources(ScreenState.LoadingState.ShowOnDemand<ResultType>().toLiveData())
+    }
+
+    private fun removeProgress() {
+        if(page == 1)
+            result.addSources(ScreenState.LoadingState.HideInitial<ResultType>().toLiveData())
+        else
+            result.addSources(ScreenState.LoadingState.HideOnDemand<ResultType>().toLiveData())
+    }
+
+    private fun addSuccess(data: ResultType?, onLastPage: Boolean) {
+        result.addSources(ScreenState.SuccessState.Api(data, onLastPage).toLiveData())
+    }
+
+    private fun addFailure(error: String?) {
+        removeProgress()
+        result.addSources(ScreenState.ErrorState.Api<ResultType>(error ?: MSG_ERROR_UNKNOWN).toLiveData())
+    }
+
+    private fun ScreenState<ResultType>?.toLiveData(): LiveData<ScreenState<ResultType>> {
+        val liveData: MutableLiveData<ScreenState<ResultType>> = MutableLiveData()
+        this?.run {
+            liveData.postValue(this)
+        }
+        return liveData
     }
 
     private fun ResultType?.toLiveData(): LiveData<ResultType> {
@@ -64,151 +168,18 @@ abstract class NetworkBoundRepository<ResultType, ResponseType> constructor(
         return liveData
     }
 
-    private fun SealedApiResult<ResponseType, ErrorEnvelope>?.toLiveData(): LiveData<SealedApiResult<ResponseType, ErrorEnvelope>> {
-        val liveData: MutableLiveData<SealedApiResult<ResponseType, ErrorEnvelope>> = MutableLiveData()
+    private fun SealedApiResult<RequestType, ErrorEnvelope>?.toLiveData(): LiveData<SealedApiResult<RequestType, ErrorEnvelope>> {
+        val liveData: MutableLiveData<SealedApiResult<RequestType, ErrorEnvelope>> = MutableLiveData()
         this?.run {
             liveData.postValue(this)
         }
         return liveData
     }
 
-    open suspend fun saveFetchData(items: ResponseType) {}
-    open suspend fun loadFromDb(): ResultType? {
-        return null
-    }
-
-    open fun onLastPage(data: ResponseType): Boolean {
-        return false
-    }
-
-    open fun shouldFetch(data: ResultType?): Boolean {
-        return false
-    }
-
-    open fun loadFromNetwork(items: ResponseType): ResultType? {
-        return null
-    }
-
-    open fun fetchService(): Deferred<SealedApiResult<ResponseType, ErrorEnvelope>>? {
-        return null
-    }
-
-    private fun initLiveData() = when (repositoryType) {
-        RepositoryType.Network -> {
-            fetchFromNetwork()
-        }
-        RepositoryType.Database -> {
-            fetchFromDatabase()
-        }
-        RepositoryType.Repository -> {
-            fetchFromRepository()
-        }
-        RepositoryType.Cached -> {
-            fetchFromCached()
-        }
-    }
-
-    private fun fetchFromNetwork() {
-        result.addSources(Status.LOADING)
-        ioScope.launch {
-            val apiResponse = fetchService()?.await().toLiveData()
-            result.addSource(apiResponse) { response ->
-                result.removeSource(apiResponse)
-                when (response) {
-                    is SealedApiResult.Some.Success2XX.Ok200 -> {
-                        response.body?.let { body ->
-                            ioScope.launch {
-                                saveFetchData(body)
-                                result.addSources(Status.SUCCESS, loadFromDb().toLiveData(), onLastPage(body))
-                            }
-                        }
-                    }
-                    is SealedApiResult.Some -> {
-                        result.addSources(
-                            Status.ERROR,
-                            onLastPage = !isPaginationRepo,
-                            msgError = response.errorBody?.statusMessage
-                        )
-                    }
-                    is SealedApiResult.NetworkError -> {
-                        result.addSources(Status.ERROR, onLastPage = !isPaginationRepo, msgError = response.e.message)
-                    }
-                    else -> {
-                        result.addSources(Status.ERROR, onLastPage = !isPaginationRepo, msgError = MSG_ERROR_UNKNOWN)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun fetchFromDatabase() {
-        result.addSources(Status.LOADING)
-        ioScope.launch {
-            val loadedFromDB = loadFromDb()
-            val loadedFromDBLiveData = loadFromDb().toLiveData()
-            result.addSource(loadedFromDBLiveData) {
-                result.removeSource(loadedFromDBLiveData)
-                result.addSources(Status.SUCCESS, loadedFromDBLiveData, loadedFromDB == null)
-            }
-        }
-    }
-
-    private fun fetchFromRepository() {
-        result.addSources(Status.LOADING)
-        ioScope.launch {
-            val loadedFromDB: LiveData<ResultType> = loadFromDb().toLiveData()
-            result.addSource(loadedFromDB) { data ->
-                result.removeSource(loadedFromDB)
-                if (shouldFetch(data)) {
-                    fetchFromRepositoryAndCached()
-                } else {
-                    result.addSources(Status.SUCCESS, loadedFromDB, false)
-                }
-            }
-        }
-    }
-
-    private fun fetchFromCached() {
-        result.addSources(Status.LOADING)
-        ioScope.launch {
-            val loadedFromDB = loadFromDb().toLiveData()
-            result.addSource(loadedFromDB) {
-                result.removeSource(loadedFromDB)
-                result.addSources(Status.SUCCESS, loadedFromDB, false)
-                fetchFromRepositoryAndCached()
-            }
-        }
-    }
-
-    private fun fetchFromRepositoryAndCached() {
-        ioScope.launch {
-            val apiResponse = fetchService()?.await().toLiveData()
-            result.addSource(apiResponse) { response ->
-                result.removeSource(apiResponse)
-                when (response) {
-                    is SealedApiResult.Some.Success2XX.Ok200 -> {
-                        response.body?.let { body ->
-                            ioScope.launch {
-                                saveFetchData(body)
-                                result.addSources(Status.SUCCESS, loadFromDb().toLiveData(), onLastPage(body))
-                            }
-                        }
-                    }
-                    is SealedApiResult.Some -> {
-                        result.addSources(
-                            Status.ERROR,
-                            onLastPage = !isPaginationRepo,
-                            msgError = response.errorBody?.statusMessage
-                        )
-                    }
-                    is SealedApiResult.NetworkError -> {
-                        result.addSources(Status.ERROR, onLastPage = !isPaginationRepo, msgError = response.e.message)
-                    }
-                    else -> {
-                        result.addSources(Status.ERROR, onLastPage = !isPaginationRepo, msgError = MSG_ERROR_UNKNOWN)
-                    }
-                }
-            }
+    private fun <T, S>MediatorLiveData<T>.addSources(source: LiveData<S>, observer: ((S?) -> Unit)? = null) {
+        addSource(source) { data ->
+            removeSource(source)
+            observer?.invoke(data)
         }
     }
 }

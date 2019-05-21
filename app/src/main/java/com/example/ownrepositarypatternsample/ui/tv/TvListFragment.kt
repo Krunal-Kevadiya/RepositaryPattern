@@ -8,8 +8,7 @@ import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseFragment
-import com.example.ownrepositarypatternsample.base.Resource
-import com.example.ownrepositarypatternsample.base.Status
+import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.databinding.ItemTvBinding
@@ -28,7 +27,6 @@ import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
 import org.jetbrains.anko.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import timber.log.Timber
 
 class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>() {
     override val mViewModel: MainViewModel by viewModel()
@@ -88,27 +86,31 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>() {
         super.onDestroy()
     }
 
-    private fun updateTvList(resource: Resource<List<Tv>>) {
-        when(resource.status) {
-            Status.SUCCESS ->  {
-                Timber.e("Load Tv List ${resource.data}")
+    private fun updateTvList(resource: ScreenState<List<Tv>>) {
+        when(resource) {
+            is ScreenState.LoadingState.ShowInitial -> {
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
+            }
+            is ScreenState.LoadingState.ShowOnDemand -> {
+                noPaginate.showError(false)
+                noPaginate.showLoading(true)
+            }
+            is ScreenState.LoadingState.HideInitial -> {
                 noPaginate.showLoading(false)
-                noPaginate.setNoMoreItems(mViewModel.getTvListValues()?.onLastPage!!)
+            }
+            is ScreenState.LoadingState.HideOnDemand -> {
+                noPaginate.showLoading(false)
+            }
+            is ScreenState.SuccessState.Api -> {
+                noPaginate.setNoMoreItems(resource.onLastPage)
                 resource.data?.let {
                     adapter?.addAll(it.toMutableList())
                 }
             }
-            Status.ERROR -> {
-                Timber.e("Error Tv List")
-                mContext.toast(resource.message.toString())
-                noPaginate.showLoading(false)
+            is ScreenState.ErrorState.Api -> {
                 noPaginate.showError(true)
-                noPaginate.setNoMoreItems(mViewModel.getTvListValues()?.onLastPage!!)
-            }
-            Status.LOADING -> {
-                Timber.e("Loading Tv List")
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
+                mContext.toast(resource.message)
             }
         }
     }

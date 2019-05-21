@@ -17,8 +17,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseActivity
-import com.example.ownrepositarypatternsample.base.Resource
-import com.example.ownrepositarypatternsample.base.Status
+import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
@@ -72,9 +71,9 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
         mBinding.personDetailName.text = getPersonFromIntent().name
     }
 
-    private fun updatePersonDetail(resource: Resource<PersonDetail>) {
-        when(resource.status) {
-            Status.SUCCESS -> {
+    private fun updatePersonDetail(resource: ScreenState<PersonDetail>) {
+        when(resource) {
+            is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
                     mBinding.personDetailBiography.text = it.bioGraphy
                     mBinding.detailPersonTags.tags = it.alsoKnownAs
@@ -84,8 +83,9 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                     }
                 }
             }
-            Status.ERROR -> toast(resource.message.toString())
-            Status.LOADING -> { }
+            is ScreenState.ErrorState.Api -> {
+                toast(resource.message)
+            }
         }
     }
 

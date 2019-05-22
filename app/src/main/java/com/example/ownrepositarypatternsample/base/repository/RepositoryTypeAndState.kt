@@ -9,10 +9,8 @@ sealed class RepositoryType {
 
 sealed class ScreenState<out ResultType> {
     sealed class LoadingState<out ResultType> : ScreenState<ResultType>() {
-        class ShowInitial<ResultType> : ScreenState<ResultType>()
-        class HideInitial<ResultType> : ScreenState<ResultType>()
-        class ShowOnDemand<ResultType> : ScreenState<ResultType>()
-        class HideOnDemand<ResultType> : ScreenState<ResultType>()
+        data class Show<ResultType>(var isInitial: Boolean = false) : ScreenState<ResultType>()
+        data class Hide<ResultType>(var isInitial: Boolean = false) : ScreenState<ResultType>()
     }
     sealed class SuccessState<out ResultType> : ScreenState<ResultType>() {
         data class Api<ResultType>(var data: ResultType?, var onLastPage: Boolean = true) : ScreenState<ResultType>()

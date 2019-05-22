@@ -1,7 +1,5 @@
 package com.example.ownrepositarypatternsample.ui.person
 
-import android.os.Bundle
-import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
@@ -20,23 +18,18 @@ import com.example.ownrepositarypatternsample.databinding.ItemPersonBinding
 import com.example.ownrepositarypatternsample.databinding.MainFragmentStarBinding
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.jetbrains.anko.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>() {
+class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>(R.layout.main_fragment_star) {
     override val mViewModel: MainViewModel by viewModel()
+
+    private var noPaginate: NoPaginate? = null
     private var adapter: SingleBindingAdapter<People>? = null
-    private lateinit var noPaginate: NoPaginate
-
-    override fun getLayoutId(): Int = R.layout.main_fragment_star
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        initializeUI()
-    }
 
     override fun initObserve() {
         observeLiveData(mViewModel.getPeopleListObservable()) { updatePeople(it) }
+
+        initializeUI()
     }
 
     private fun initializeUI() {
@@ -48,7 +41,7 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
             onClick(R.id.item_person_profile) { view, _, item ->
                 activity?.let { act ->
                     PersonDetailActivity.startActivity(this@PersonListFragment, act, item, view)
-                } ?: launchActivity<PersonDetailActivity>(params = *arrayOf("person" to item))
+                } ?: mContext.launchActivity<PersonDetailActivity>(params = *arrayOf("person" to item))
             }
             withItems(mutableListOf())
         }
@@ -69,35 +62,38 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>()
     }
 
     override fun onDestroy() {
-        noPaginate.unbind()
+        noPaginate?.unbind()
         super.onDestroy()
     }
 
     private fun updatePeople(resource: ScreenState<List<People>>) {
         when(resource) {
-            is ScreenState.LoadingState.ShowInitial -> {
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
+            is ScreenState.LoadingState.Show -> {
+                if(resource.isInitial) {
+                    showAlertView(true)
+                } else {
+                    noPaginate?.showError(false)
+                    noPaginate?.showLoading(true)
+                }
             }
-            is ScreenState.LoadingState.ShowOnDemand -> {
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
-            }
-            is ScreenState.LoadingState.HideInitial -> {
-                noPaginate.showLoading(false)
-            }
-            is ScreenState.LoadingState.HideOnDemand -> {
-                noPaginate.showLoading(false)
+            is ScreenState.LoadingState.Hide -> {
+                if(resource.isInitial) {
+                    showAlertView(false)
+                } else {
+                    noPaginate?.showLoading(false)
+                }
             }
             is ScreenState.SuccessState.Api -> {
-                noPaginate.setNoMoreItems(resource.onLastPage)
+                noPaginate?.setNoMoreItems(resource.onLastPage)
                 resource.data?.let {
-                    adapter?.addAll(it.toMutableList())
+                    val list = adapter?.getItemLists()?.toMutableList() ?: mutableListOf()
+                    list.addAll(it.toMutableList())
+                    adapter?.reSet(list.distinct().toMutableList())
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                noPaginate.showError(true)
-                mContext.toast(resource.message)
+                noPaginate?.showError(true)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }

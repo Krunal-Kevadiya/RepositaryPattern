@@ -2,7 +2,6 @@ package com.example.ownrepositarypatternsample.ui.tv.detail
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -28,20 +27,13 @@ import com.kotlinlibrary.utils.ktx.applyToolbarMargin
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
 import com.kotlinlibrary.utils.ktx.visible
-import org.jetbrains.anko.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel>() {
+class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel>(R.layout.activity_tv_detail) {
     override val mViewModel: TvDetailViewModel by viewModel()
+
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
-
-    override fun getLayoutId(): Int = R.layout.activity_tv_detail
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        initializeUI()
-    }
 
     override fun initObserve() {
         observeLiveData(mViewModel.getKeywordListObservable()) { updateKeywordList(it) }
@@ -52,6 +44,8 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
 
         observeLiveData(mViewModel.getReviewListObservable()) { updateReviewList(it) }
         mViewModel.postReviewId(getTvFromIntent().id)
+
+        initializeUI()
     }
 
     private fun initializeUI() {
@@ -110,6 +104,12 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
 
     private fun updateKeywordList(resource: ScreenState<List<Keyword>>) {
         when(resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
                 mBinding.incBody.detailBodyTags.tags = KeywordListMapper.mapToStringList(resource.data!!)
 
@@ -118,39 +118,55 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }
 
     private fun updateVideoList(resource: ScreenState<List<Video>>) {
         when(resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    videoAdapter?.addAll(it.toMutableList())
+                    val list = videoAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
+                    list.addAll(it.toMutableList())
+                    videoAdapter?.reSet(list.distinct().toMutableList())
 
                     mBinding.incBody.detailBodyTrailers.visible()
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }
 
     private fun updateReviewList(resource: ScreenState<List<Review>>) {
         when(resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    reviewAdapter?.addAll(it.toMutableList())
+                    val list = reviewAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
+                    list.addAll(it.toMutableList())
+                    reviewAdapter?.reSet(list.distinct().toMutableList())
 
                     mBinding.incBody.detailBodyReviews.visible()
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }

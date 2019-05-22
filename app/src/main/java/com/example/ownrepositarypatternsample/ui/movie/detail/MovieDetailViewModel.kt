@@ -10,7 +10,7 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Keyw
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Review
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.repository.MovieRepository
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 
 class MovieDetailViewModel(
     private val repository: MovieRepository
@@ -49,6 +49,6 @@ class MovieDetailViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.ioScope.cancel()
+        repository.ioScope.coroutineContext.cancelChildren()
     }
 }

@@ -8,7 +8,7 @@ import com.example.ownrepositarypatternsample.base.repository.AbsentLiveData
 import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.data.repository.PeopleRepository
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 
 class PersonDetailViewModel(
     private val repository: PeopleRepository
@@ -27,6 +27,6 @@ class PersonDetailViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.ioScope.cancel()
+        repository.ioScope.coroutineContext.cancelChildren()
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ownrepositarypatternsample.base
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,12 +10,24 @@ import androidx.annotation.LayoutRes
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import com.example.ownrepositarypatternsample.BR
+import com.kotlinlibrary.snackbar.Snackbar
+import com.kotlinlibrary.snackbar.util.SnackBatType
+import com.kotlinlibrary.snackbar.util.snackBarMessage
+import com.kotlinlibrary.statusbaralert.StatusBarAlert
+import com.kotlinlibrary.statusbaralert.StatusBarAlertView
+import com.kotlinlibrary.statusbaralert.progressMessage
 import com.kotlinlibrary.utils.ktx.inflateBindView
+import com.kotlinlibrary.utils.ktx.observeLiveData
 
-abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragment() {
+abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel>(
+    @LayoutRes val layoutRes: Int
+) : Fragment() {
     protected lateinit var mBinding: VDB
     protected abstract val mViewModel: BVM
+
     protected lateinit var mContext: Context
+    private lateinit var snackBarMsg: Snackbar
+    private var statusBarProgress: StatusBarAlertView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +38,7 @@ abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragme
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mBinding = inflateBindView(getLayoutId(), container, false)
+        mBinding = inflateBindView(layoutRes, container, false)
         return mBinding.root
     }
 
@@ -33,6 +46,13 @@ abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragme
         super.onViewCreated(view, savedInstanceState)
         mBinding.setVariable(BR.viewModel, mViewModel)
         mBinding.executePendingBindings()
+
+        observeLiveData(mViewModel.message) { msg ->
+            msg?.let {
+                snackBarMsg = mContext.snackBarMessage(SnackBatType.INFO, msg = it).build()
+                snackBarMsg.show()
+            }
+        }
         initObserve()
     }
 
@@ -50,7 +70,24 @@ abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel> : Fragme
         return mActivity
     }
 
-    @LayoutRes
-    abstract fun getLayoutId(): Int
     open fun initObserve() {}
+
+    protected fun showAlertView(isShow: Boolean) {
+        if(isShow) {
+            if (statusBarProgress != null) {
+                StatusBarAlert.hide(mContext as Activity, Runnable {})
+            }
+            statusBarProgress = (mContext as Activity).progressMessage(msg = "Please wait")
+            statusBarProgress?.showIndeterminateProgress()
+        } else {
+            StatusBarAlert.hide(mContext as Activity, Runnable {})
+        }
+    }
+
+    override fun onPause() {
+        if (::snackBarMsg.isInitialized)
+            snackBarMsg.dismiss()
+        showAlertView(false)
+        super.onPause()
+    }
 }

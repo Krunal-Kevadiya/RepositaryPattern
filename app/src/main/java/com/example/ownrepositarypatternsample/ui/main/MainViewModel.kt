@@ -11,14 +11,14 @@ import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.local.entity.Tv
 import com.example.ownrepositarypatternsample.data.repository.DiscoverRepository
 import com.example.ownrepositarypatternsample.data.repository.PeopleRepository
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 
 class MainViewModel(
     private val discoverRepository: DiscoverRepository,
     private val peopleRepository: PeopleRepository
 ) : BaseViewModel() {
     private var moviePageLiveData: MutableLiveData<Int> = MutableLiveData()
-    private var movieListLiveData: LiveData<ScreenState<List<Movie>>> = AbsentLiveData.create()
+    private var movieListLiveData: LiveData<ScreenState<List<Movie>>>
 
     private var tvPageLiveData: MutableLiveData<Int> = MutableLiveData()
     private val tvListLiveData: LiveData<ScreenState<List<Tv>>>
@@ -72,7 +72,7 @@ class MainViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        discoverRepository.ioScope.cancel()
-        peopleRepository.ioScope.cancel()
+        discoverRepository.ioScope.coroutineContext.cancelChildren()
+        peopleRepository.ioScope.coroutineContext.cancelChildren()
     }
 }

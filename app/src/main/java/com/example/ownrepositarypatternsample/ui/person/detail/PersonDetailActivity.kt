@@ -3,7 +3,6 @@ package com.example.ownrepositarypatternsample.ui.person.detail
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.os.Bundle
 import android.view.View
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.ViewCompat
@@ -26,25 +25,17 @@ import com.kotlinlibrary.utils.ktx.fromApi
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.toApi
 import com.kotlinlibrary.utils.ktx.visible
-import org.jetbrains.anko.startActivityForResult
-import org.jetbrains.anko.toast
+import com.kotlinlibrary.utils.navigate.launchActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDetailViewModel>() {
+class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDetailViewModel>(R.layout.activity_person_detail) {
     override val mViewModel: PersonDetailViewModel by viewModel()
 
-    override fun getLayoutId(): Int = R.layout.activity_person_detail
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        supportPostponeEnterTransition()
-
-        initializeUI()
-    }
-
     override fun initObserve() {
-        observeLiveData(mViewModel.getPersonObservable()) { updatePersonDetail(it)}
-        mViewModel.postPersonId(getPersonFromIntent().id)
+        observeLiveData(mViewModel.getPersonObservable()) { updatePersonDetail(it) }
+
+        supportPostponeEnterTransition()
+        initializeUI()
     }
 
     private fun initializeUI() {
@@ -69,10 +60,17 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                     .into(mBinding.personDetailProfile)
         }
         mBinding.personDetailName.text = getPersonFromIntent().name
+        mViewModel.postPersonId(getPersonFromIntent().id)
     }
 
     private fun updatePersonDetail(resource: ScreenState<PersonDetail>) {
         when(resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
                     mBinding.personDetailBiography.text = it.bioGraphy
@@ -84,7 +82,7 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }
@@ -101,12 +99,14 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                 val intent = Intent(activity, PersonDetailActivity::class.java)
                 ViewCompat.getTransitionName(view)?.let {
                     val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, it)
-                    intent.putExtra("people", people)
+                    intent.putExtra("person", people)
                     activity.startActivityFromFragment(fragment, intent, INTENT_REQUEST_CODE, options.toBundle())
                 }
             }
             toApi(Build.VERSION_CODES.LOLLIPOP) {
-                activity.startActivityForResult<PersonDetailActivity>(INTENT_REQUEST_CODE, "people" to people)
+                activity.launchActivity<PersonDetailActivity>(
+                    params = *arrayOf("person" to people), resultCode = INTENT_REQUEST_CODE
+                )
             }
         }
     }

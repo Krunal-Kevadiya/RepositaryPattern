@@ -2,7 +2,6 @@ package com.example.ownrepositarypatternsample.ui.movie.detail
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -19,7 +18,7 @@ import com.example.ownrepositarypatternsample.databinding.ActivityMovieDetailBin
 import com.example.ownrepositarypatternsample.databinding.ItemReviewBinding
 import com.example.ownrepositarypatternsample.databinding.ItemVideoBinding
 import com.example.ownrepositarypatternsample.utils.KeywordListMapper
-import com.example.ownrepositarypatternsample.utils.extension.*
+import com.example.ownrepositarypatternsample.utils.extension.requestGlideListener
 import com.github.florent37.glidepalette.BitmapPalette
 import com.github.florent37.glidepalette.GlidePalette
 import com.kotlinlibrary.recycleradapter.setUpBinding
@@ -28,20 +27,13 @@ import com.kotlinlibrary.utils.ktx.applyToolbarMargin
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
 import com.kotlinlibrary.utils.ktx.visible
-import org.jetbrains.anko.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetailViewModel>() {
+class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetailViewModel>(R.layout.activity_movie_detail) {
     override val mViewModel: MovieDetailViewModel by viewModel()
+
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
-
-    override fun getLayoutId(): Int = R.layout.activity_movie_detail
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        initializeUI()
-    }
 
     override fun initObserve() {
         observeLiveData(mViewModel.getKeywordListObservable()) { updateKeywordList(it) }
@@ -52,6 +44,8 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
 
         observeLiveData(mViewModel.getReviewListObservable()) { updateReviewList(it) }
         mViewModel.postReviewId(getMovieFromIntent().id)
+
+        initializeUI()
     }
 
     private fun initializeUI() {
@@ -59,12 +53,12 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
         simpleToolbarWithHome(mBinding.movieDetailToolbar, getMovieFromIntent().title)
         getMovieFromIntent().backdropPath?.let {
             Glide.with(this).load(Api.getBackdropPath(it))
-                    .listener(requestGlideListener(mBinding.movieDetailPoster))
-                    .into(mBinding.movieDetailPoster)
+                .listener(requestGlideListener(mBinding.movieDetailPoster))
+                .into(mBinding.movieDetailPoster)
         } ?: let {
             Glide.with(this).load(Api.getBackdropPath(getMovieFromIntent().posterPath!!))
-                    .listener(requestGlideListener(mBinding.movieDetailPoster))
-                    .into(mBinding.movieDetailPoster)
+                .listener(requestGlideListener(mBinding.movieDetailPoster))
+                .into(mBinding.movieDetailPoster)
         }
         mBinding.incHeader.detailHeaderTitle.text = getMovieFromIntent().title
         mBinding.incHeader.detailHeaderRelease.text = "Release Date : ${getMovieFromIntent().releaseDate}"
@@ -80,9 +74,10 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
                         .load(Api.getYoutubeThumbnailPath(it))
                         .listener(
                             GlidePalette.with(Api.getYoutubeThumbnailPath(it))
-                            .use(BitmapPalette.Profile.VIBRANT)
-                            .intoBackground(itemVideoPalette)
-                            .crossfade(true))
+                                .use(BitmapPalette.Profile.VIBRANT)
+                                .intoBackground(itemVideoPalette)
+                                .crossfade(true)
+                        )
                         .into(itemVideoCover)
                 }
             }
@@ -108,47 +103,71 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
     }
 
     private fun updateKeywordList(resource: ScreenState<List<Keyword>>) {
-        when(resource) {
+        when (resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
-                mBinding.incBody.detailBodyTags.tags = KeywordListMapper.mapToStringList(resource.data!!)
-                if(!resource.data.isNullOrEmpty()) {
+                resource.data?.let {
+                    mBinding.incBody.detailBodyTags.tags = KeywordListMapper.mapToStringList(it)
+                }
+                if (!resource.data.isNullOrEmpty()) {
                     mBinding.incBody.detailBodyTags.visible()
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }
 
     private fun updateVideoList(resource: ScreenState<List<Video>>) {
-        when(resource) {
+        when (resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    videoAdapter?.addAll(it.toMutableList())
+                    val list = videoAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
+                    list.addAll(it.toMutableList())
+                    videoAdapter?.reSet(list.distinct().toMutableList())
 
                     mBinding.incBody.detailBodyTrailers.visible()
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }
 
     private fun updateReviewList(resource: ScreenState<List<Review>>) {
-        when(resource) {
+        when (resource) {
+            is ScreenState.LoadingState.Show -> {
+                showAlertView(true)
+            }
+            is ScreenState.LoadingState.Hide -> {
+                showAlertView(false)
+            }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    reviewAdapter?.addAll(it.toMutableList())
+                    val list = reviewAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
+                    list.addAll(it.toMutableList())
+                    reviewAdapter?.reSet(list.distinct().toMutableList())
 
                     mBinding.incBody.detailBodyReviews.visible()
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                toast(resource.message)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }
@@ -158,7 +177,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if(item?.itemId == android.R.id.home) onBackPressed()
+        if (item?.itemId == android.R.id.home) onBackPressed()
         return false
     }
 }

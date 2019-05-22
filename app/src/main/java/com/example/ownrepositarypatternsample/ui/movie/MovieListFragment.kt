@@ -1,8 +1,6 @@
 package com.example.ownrepositarypatternsample.ui.movie
 
 import android.app.Activity
-import android.os.Bundle
-import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.ownrepositarypatternsample.BR
@@ -25,25 +23,18 @@ import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.jetbrains.anko.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>() {
+class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(R.layout.main_fragment_movie) {
     override val mViewModel: MainViewModel by viewModel()
+
+    private var noPaginate: NoPaginate? = null
     private var adapter: SingleBindingAdapter<Movie>? = null
-    private lateinit var noPaginate: NoPaginate
-
-    override fun getLayoutId(): Int = R.layout.main_fragment_movie
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        initializeUI()
-    }
 
     override fun initObserve() {
-        observeLiveData(mViewModel.getMovieListObservable()) {
-            updateMovieList(it)
-        }
+        observeLiveData(mViewModel.getMovieListObservable()) { updateMovieList(it) }
+
+        initializeUI()
     }
 
     private fun initializeUI() {
@@ -84,35 +75,38 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
     }
 
     override fun onDestroy() {
-        noPaginate.unbind()
+        noPaginate?.unbind()
         super.onDestroy()
     }
 
     private fun updateMovieList(resource: ScreenState<List<Movie>>) {
         when(resource) {
-            is ScreenState.LoadingState.ShowInitial -> {
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
+            is ScreenState.LoadingState.Show -> {
+                if(resource.isInitial) {
+                    showAlertView(true)
+                } else {
+                    noPaginate?.showError(false)
+                    noPaginate?.showLoading(true)
+                }
             }
-            is ScreenState.LoadingState.ShowOnDemand -> {
-                noPaginate.showError(false)
-                noPaginate.showLoading(true)
-            }
-            is ScreenState.LoadingState.HideInitial -> {
-                noPaginate.showLoading(false)
-            }
-            is ScreenState.LoadingState.HideOnDemand -> {
-                noPaginate.showLoading(false)
+            is ScreenState.LoadingState.Hide -> {
+                if(resource.isInitial) {
+                    showAlertView(false)
+                } else {
+                    noPaginate?.showLoading(false)
+                }
             }
             is ScreenState.SuccessState.Api -> {
-                noPaginate.setNoMoreItems(resource.onLastPage)
+                noPaginate?.setNoMoreItems(resource.onLastPage)
                 resource.data?.let {
-                    adapter?.addAll(it.toMutableList())
+                    val list = adapter?.getItemLists()?.toMutableList() ?: mutableListOf()
+                    list.addAll(it.toMutableList())
+                    adapter?.reSet(list.distinct().toMutableList())
                 }
             }
             is ScreenState.ErrorState.Api -> {
-                noPaginate.showError(true)
-                mContext.toast(resource.message)
+                noPaginate?.showError(true)
+                mViewModel.message.postValue(resource.message)
             }
         }
     }

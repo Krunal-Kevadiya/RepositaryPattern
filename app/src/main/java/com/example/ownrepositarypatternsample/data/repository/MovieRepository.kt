@@ -14,6 +14,7 @@ import com.example.ownrepositarypatternsample.data.remote.response.submodel.Revi
 import com.example.ownrepositarypatternsample.data.remote.response.submodel.Video
 import com.example.ownrepositarypatternsample.data.remote.service.MovieService
 import com.kotlinlibrary.retrofitadapter.SealedApiResult
+import com.kotlinlibrary.utils.ktx.logs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 
@@ -22,6 +23,7 @@ class MovieRepository constructor(
     val movieDao: MovieDao,
     val ioScope: CoroutineScope
 ) {
+
     fun loadKeywordList(id: Int): LiveData<ScreenState<List<Keyword>>> {
         return object: NetworkBoundRepository<List<Keyword>, KeywordListResponse>(
             RepositoryType.Cached, ioScope
@@ -38,7 +40,7 @@ class MovieRepository constructor(
 
             override suspend fun loadFromDb(): List<Keyword>? {
                 val movie = movieDao.getMovie(id_ = id)
-                return movie.keywords!!
+                return movie.keywords
             }
 
             override fun loadFromNetwork(items: KeywordListResponse): List<Keyword>? {
@@ -71,7 +73,7 @@ class MovieRepository constructor(
 
             override suspend fun loadFromDb(): List<Video>? {
                 val movie = movieDao.getMovie(id_ = id)
-                return movie.videos!!
+                return movie.videos
             }
 
             override fun loadFromNetwork(items: VideoListResponse): List<Video>? {
@@ -104,7 +106,7 @@ class MovieRepository constructor(
 
             override suspend fun loadFromDb(): List<Review>? {
                 val movie = movieDao.getMovie(id_ = id)
-                return movie.reviews!!
+                return movie.reviews
             }
 
             override fun loadFromNetwork(items: ReviewListResponse): List<Review>? {

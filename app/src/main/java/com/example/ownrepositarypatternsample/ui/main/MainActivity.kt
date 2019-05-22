@@ -2,7 +2,6 @@ package com.example.ownrepositarypatternsample.ui.main
 
 import android.content.Context
 import android.graphics.Color
-import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager
 import com.example.ownrepositarypatternsample.R
@@ -11,13 +10,11 @@ import com.example.ownrepositarypatternsample.databinding.ActivityMainBinding
 import devlight.io.library.ntb.NavigationTabBar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
+class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.activity_main) {
     override val mViewModel: MainViewModel by viewModel()
 
-    override fun getLayoutId(): Int = R.layout.activity_main
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
+    override fun initObserve() {
+        super.initObserve()
         initializeUI()
     }
 

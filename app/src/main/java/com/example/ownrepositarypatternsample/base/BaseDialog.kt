@@ -11,7 +11,9 @@ import androidx.fragment.app.DialogFragment
 import com.example.ownrepositarypatternsample.BR
 import com.kotlinlibrary.utils.ktx.inflateBindView
 
-abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFragment() {
+abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel>(
+    @LayoutRes val layoutRes: Int
+) : DialogFragment() {
     protected lateinit var mBinding: VDB
     protected abstract val mViewModel: BVM
     protected lateinit var mContext: Context
@@ -24,7 +26,7 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFr
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mBinding = inflateBindView(getLayoutId(), container, false)
+        mBinding = inflateBindView(layoutRes, container, false)
         dialog?.let {
             it.setCancelable(false)
             it.setCanceledOnTouchOutside(false)
@@ -63,7 +65,5 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel> : DialogFr
         return mActivity
     }
 
-    @LayoutRes
-    abstract fun getLayoutId(): Int
     open fun initObserve() {}
 }

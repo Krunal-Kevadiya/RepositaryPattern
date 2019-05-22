@@ -7,19 +7,18 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.kotlinlibrary.retrofitadapter.SealedApiResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.launch
+import com.kotlinlibrary.utils.ktx.logs
+import kotlinx.coroutines.*
 
-abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread constructor(
+abstract class NetworkBoundRepository<ResultType, RequestType> constructor(
     repositoryType: RepositoryType,
     private val ioScope: CoroutineScope,
     private val page: Int = -1
 ) {
-    private val MSG_ERROR_UNKNOWN = "Error Unknown"
+    private val msgErrorUnknown = "Error Unknown"
     private val result = MediatorLiveData<ScreenState<ResultType>>()
     fun asLiveData() = result as LiveData<ScreenState<ResultType>>
- 
+
     init {
         when (repositoryType) {
             RepositoryType.Network -> {
@@ -41,17 +40,19 @@ abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread const
         addProgress()
         ioScope.launch {
             val apiResponse = fetchService()!!.await().toLiveData()
-            result.addSources(apiResponse) { response ->
-                when (response) {
-                    is SealedApiResult.Some.Success2XX.Ok200 -> {
-                        response.body?.let { body ->
-                            removeProgress()
-                            addSuccess(loadFromNetwork(body), onLastPage(body))
+            withContext(Dispatchers.Main) {
+                result.addSources(apiResponse) { response ->
+                    when (response) {
+                        is SealedApiResult.Some.Success2XX.Ok200 -> {
+                            response.body?.let { body ->
+                                removeProgress()
+                                addSuccess(loadFromNetwork(body), onLastPage(body))
+                            }
                         }
+                        is SealedApiResult.Some -> addFailure(response.errorBody?.statusMessage)
+                        is SealedApiResult.NetworkError -> addFailure(response.e.message)
+                        else -> addFailure()
                     }
-                    is SealedApiResult.Some -> addFailure(response.errorBody?.statusMessage)
-                    is SealedApiResult.NetworkError -> addFailure(response.e.message)
-                    else -> addFailure(MSG_ERROR_UNKNOWN)
                 }
             }
         }
@@ -61,9 +62,11 @@ abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread const
         addProgress()
         ioScope.launch {
             val loadedFromDB = loadFromDb()
-            result.addSource(loadedFromDB.toLiveData()) { response ->
-                removeProgress()
-                addSuccess(response, loadedFromDB == null)
+            withContext(Dispatchers.Main) {
+                result.addSource(loadedFromDB.toLiveData()) { response ->
+                    removeProgress()
+                    addSuccess(response, loadedFromDB == null)
+                }
             }
         }
     }
@@ -72,12 +75,14 @@ abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread const
         addProgress()
         ioScope.launch {
             val loadedFromDB: LiveData<ResultType> = loadFromDb().toLiveData()
-            result.addSources(loadedFromDB) { response ->
-                if (shouldFetch(response)) {
-                    fetchFromServerAndCached()
-                } else {
-                    removeProgress()
-                    addSuccess(response, false)
+            withContext(Dispatchers.Main) {
+                result.addSources(loadedFromDB) { response ->
+                    if (shouldFetch(response)) {
+                        fetchFromServerAndCached()
+                    } else {
+                        removeProgress()
+                        addSuccess(response, false)
+                    }
                 }
             }
         }
@@ -87,9 +92,13 @@ abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread const
         addProgress()
         ioScope.launch {
             val loadedFromDB = loadFromDb().toLiveData()
-            result.addSources(loadedFromDB) { response ->
-                addSuccess(response, false)
-                fetchFromServerAndCached()
+            logs("loadedFromDB = ${loadedFromDB.value}")
+            withContext(Dispatchers.Main) {
+                result.addSources(loadedFromDB) { response ->
+                    logs("response = $response")
+                    addSuccess(response, false)
+                    fetchFromServerAndCached()
+                }
             }
         }
     }
@@ -97,86 +106,93 @@ abstract class NetworkBoundRepository<ResultType, RequestType> @MainThread const
     private fun fetchFromServerAndCached() {
         ioScope.launch {
             val apiResponse = fetchService()!!.await().toLiveData()
-            result.addSources(apiResponse) { response ->
-                when (response) {
-                    is SealedApiResult.Some.Success2XX.Ok200 -> {
-                        response.body?.let { body ->
-                            ioScope.launch {
-                                saveFetchData(body)
-                                removeProgress()
-                                addSuccess(loadFromDb(), onLastPage(body))
+            withContext(Dispatchers.Main) {
+                result.addSources(apiResponse) { response ->
+                    when (response) {
+                        is SealedApiResult.Some.Success2XX.Ok200 -> {
+                            response.body?.let { body ->
+                                ioScope.launch {
+                                    saveFetchData(body)
+                                    withContext(Dispatchers.Main) {
+                                        removeProgress()
+                                        addSuccess(loadFromDb(), onLastPage(body))
+                                    }
+                                }
                             }
                         }
+                        is SealedApiResult.Some -> addFailure(response.errorBody?.statusMessage)
+                        is SealedApiResult.NetworkError -> addFailure(response.e.message)
+                        else -> addFailure()
                     }
-                    is SealedApiResult.Some -> addFailure(response.errorBody?.statusMessage)
-                    is SealedApiResult.NetworkError -> addFailure(response.e.message)
-                    else -> addFailure(MSG_ERROR_UNKNOWN)
                 }
             }
         }
     }
 
     @WorkerThread
-    open suspend fun saveFetchData(items: RequestType) {}
+    open suspend fun saveFetchData(items: RequestType) {
+    }
+
     @WorkerThread
     open suspend fun loadFromDb(): ResultType? = null
+
     @WorkerThread
     open fun onLastPage(data: RequestType): Boolean = false
+
     @WorkerThread
     open fun shouldFetch(data: ResultType?): Boolean = false
+
     @WorkerThread
     open fun loadFromNetwork(items: RequestType): ResultType? = null
+
     @WorkerThread
     open fun fetchService(): Deferred<SealedApiResult<RequestType, ErrorEnvelope>>? = null
 
     private fun addProgress() {
-        if(page == 1)
-            result.addSources(ScreenState.LoadingState.ShowInitial<ResultType>().toLiveData())
-        else
-            result.addSources(ScreenState.LoadingState.ShowOnDemand<ResultType>().toLiveData())
+        result.addSources(ScreenState.LoadingState.Show<ResultType>(page == 1).toLiveData()) { response ->
+            result.postValue(response)
+        }
     }
 
     private fun removeProgress() {
-        if(page == 1)
-            result.addSources(ScreenState.LoadingState.HideInitial<ResultType>().toLiveData())
-        else
-            result.addSources(ScreenState.LoadingState.HideOnDemand<ResultType>().toLiveData())
+        result.addSources(ScreenState.LoadingState.Hide<ResultType>(page == 1).toLiveData()) { response ->
+            result.postValue(response)
+        }
     }
 
     private fun addSuccess(data: ResultType?, onLastPage: Boolean) {
-        result.addSources(ScreenState.SuccessState.Api(data, onLastPage).toLiveData())
+        result.addSources(ScreenState.SuccessState.Api(data, onLastPage).toLiveData()) { response ->
+            result.postValue(response)
+        }
     }
 
-    private fun addFailure(error: String?) {
+    private fun addFailure(error: String? = null) {
         removeProgress()
-        result.addSources(ScreenState.ErrorState.Api<ResultType>(error ?: MSG_ERROR_UNKNOWN).toLiveData())
+        result.addSources(ScreenState.ErrorState.Api<ResultType>(error ?: msgErrorUnknown).toLiveData()) { response ->
+            result.postValue(response)
+        }
     }
 
     private fun ScreenState<ResultType>?.toLiveData(): LiveData<ScreenState<ResultType>> {
         val liveData: MutableLiveData<ScreenState<ResultType>> = MutableLiveData()
-        this?.run {
-            liveData.postValue(this)
-        }
+        liveData.postValue(this)
         return liveData
     }
 
     private fun ResultType?.toLiveData(): LiveData<ResultType> {
         val liveData: MutableLiveData<ResultType> = MutableLiveData()
-        this?.run {
-            liveData.postValue(this)
-        }
+        liveData.postValue(this)
         return liveData
     }
 
     private fun SealedApiResult<RequestType, ErrorEnvelope>?.toLiveData(): LiveData<SealedApiResult<RequestType, ErrorEnvelope>> {
         val liveData: MutableLiveData<SealedApiResult<RequestType, ErrorEnvelope>> = MutableLiveData()
-        this?.run {
-            liveData.postValue(this)
-        }
+        liveData.postValue(this)
         return liveData
     }
 
-    private fun <T, S>MediatorLiveData<T>.addSources(source: LiveData<S>, observer: ((S?) -> Unit)? = null) {
+    @MainThread
+    private fun <T, S> MediatorLiveData<T>.addSources(source: LiveData<S>, observer: ((S?) -> Unit)? = null) {
         addSource(source) { data ->
             removeSource(source)
             observer?.invoke(data)

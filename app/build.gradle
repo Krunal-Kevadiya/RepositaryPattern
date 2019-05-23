@@ -20,6 +20,8 @@ def getProperty(String filename, String propName) {
 
 android {
     compileSdkVersion 'android-Q'
+    buildToolsVersion = '29.0.0 rc2'
+
     defaultConfig {
         applicationId "com.example.ownrepositarypatternsample"
         minSdkVersion 21
@@ -52,7 +54,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion = '29.0.0 rc2'
 }
 
 dependencies {
@@ -106,5 +107,5 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1"
 
-    implementation "com.github.Krunal-Kevadiya:kotlin-common:1.1.6"
+    implementation "com.github.Krunal-Kevadiya:kotlin-common:1.1.8"
 }

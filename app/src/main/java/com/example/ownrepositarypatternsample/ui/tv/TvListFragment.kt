@@ -99,9 +99,7 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>(R.layou
             is ScreenState.SuccessState.Api -> {
                 noPaginate?.setNoMoreItems(resource.onLastPage)
                 resource.data?.let {
-                    val list = adapter?.getItemLists()?.toMutableList() ?: mutableListOf()
-                    list.addAll(it.toMutableList())
-                    adapter?.reSet(list.distinct().toMutableList())
+                    adapter?.addAll(it.toMutableList())
                 }
             }
             is ScreenState.ErrorState.Api -> {

@@ -2,6 +2,7 @@ package com.example.ownrepositarypatternsample.ui.movie.detail
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -44,7 +45,10 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
 
         observeLiveData(mViewModel.getReviewListObservable()) { updateReviewList(it) }
         mViewModel.postReviewId(getMovieFromIntent().id)
+    }
 
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
         initializeUI()
     }
 
@@ -134,9 +138,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
             }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    val list = videoAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
-                    list.addAll(it.toMutableList())
-                    videoAdapter?.reSet(list.distinct().toMutableList())
+                    videoAdapter?.addAll(it.toMutableList())
 
                     mBinding.incBody.detailBodyTrailers.visible()
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
@@ -158,9 +160,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
             }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    val list = reviewAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
-                    list.addAll(it.toMutableList())
-                    reviewAdapter?.reSet(list.distinct().toMutableList())
+                    reviewAdapter?.addAll(it.toMutableList())
 
                     mBinding.incBody.detailBodyReviews.visible()
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()

@@ -2,6 +2,7 @@ package com.example.ownrepositarypatternsample.ui.tv.detail
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -44,7 +45,10 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
 
         observeLiveData(mViewModel.getReviewListObservable()) { updateReviewList(it) }
         mViewModel.postReviewId(getTvFromIntent().id)
+    }
 
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
         initializeUI()
     }
 
@@ -111,7 +115,9 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
                 showAlertView(false)
             }
             is ScreenState.SuccessState.Api -> {
-                mBinding.incBody.detailBodyTags.tags = KeywordListMapper.mapToStringList(resource.data!!)
+                resource.data?.let {
+                    mBinding.incBody.detailBodyTags.tags = KeywordListMapper.mapToStringList(it)
+                }
 
                 if(!resource.data.isNullOrEmpty()) {
                     mBinding.incBody.detailBodyTags.visible()
@@ -133,9 +139,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
             }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    val list = videoAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
-                    list.addAll(it.toMutableList())
-                    videoAdapter?.reSet(list.distinct().toMutableList())
+                    videoAdapter?.addAll(it.toMutableList())
 
                     mBinding.incBody.detailBodyTrailers.visible()
                     mBinding.incBody.detailBodyRecyclerViewTrailers.visible()
@@ -157,9 +161,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
             }
             is ScreenState.SuccessState.Api -> {
                 resource.data?.let {
-                    val list = reviewAdapter?.getItemLists()?.toMutableList() ?: mutableListOf()
-                    list.addAll(it.toMutableList())
-                    reviewAdapter?.reSet(list.distinct().toMutableList())
+                    reviewAdapter?.addAll(it.toMutableList())
 
                     mBinding.incBody.detailBodyReviews.visible()
                     mBinding.incBody.detailBodyRecyclerViewReviews.visible()

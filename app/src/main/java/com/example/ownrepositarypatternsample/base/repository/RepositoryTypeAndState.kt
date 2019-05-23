@@ -18,6 +18,6 @@ sealed class ScreenState<out ResultType> {
     }
     sealed class ErrorState<out ResultType> : ScreenState<ResultType>() {
         data class Api<ResultType>(var message: String) : ScreenState<ResultType>()
-        data class Validation<ResultType>(var message: String) : ScreenState<ResultType>()
+        data class Validation<ResultType>(var message: Int) : ScreenState<ResultType>()
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ownrepositarypatternsample.di.modul
 
+import com.example.ownrepositarypatternsample.ui.login.LoginViewModel
 import com.example.ownrepositarypatternsample.ui.main.MainViewModel
 import com.example.ownrepositarypatternsample.ui.movie.detail.MovieDetailViewModel
 import com.example.ownrepositarypatternsample.ui.person.detail.PersonDetailViewModel
@@ -19,5 +20,8 @@ val viewModelModule = module {
     }
     viewModel {
         PersonDetailViewModel(get())
+    }
+    viewModel {
+        LoginViewModel()
     }
 }

@@ -3,6 +3,7 @@ package com.example.ownrepositarypatternsample.ui.person.detail
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.Bundle
 import android.view.View
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.ViewCompat
@@ -33,7 +34,10 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
 
     override fun initObserve() {
         observeLiveData(mViewModel.getPersonObservable()) { updatePersonDetail(it) }
+    }
 
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
         supportPostponeEnterTransition()
         initializeUI()
     }
@@ -76,7 +80,7 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                     mBinding.personDetailBiography.text = it.bioGraphy
                     mBinding.detailPersonTags.tags = it.alsoKnownAs
 
-                    if(it.alsoKnownAs.isNotEmpty()) {
+                    if(!it.alsoKnownAs.isNullOrEmpty()) {
                         mBinding.detailPersonTags.visible()
                     }
                 }

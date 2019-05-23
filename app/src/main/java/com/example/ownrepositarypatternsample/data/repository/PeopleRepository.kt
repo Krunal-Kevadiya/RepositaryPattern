@@ -64,7 +64,7 @@ class PeopleRepository constructor(
             }
 
             override fun shouldFetch(data: PersonDetail?): Boolean {
-                return data == null || data.bioGraphy.isEmpty()
+                return data == null || data.bioGraphy.isNullOrEmpty()
             }
 
             override suspend fun loadFromDb(): PersonDetail? {

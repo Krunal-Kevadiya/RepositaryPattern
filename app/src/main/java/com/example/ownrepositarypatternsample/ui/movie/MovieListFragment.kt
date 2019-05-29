@@ -23,11 +23,8 @@ import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(R.layout.main_fragment_movie) {
-    override val mViewModel: MainViewModel by viewModel()
-
     private var noPaginate: NoPaginate? = null
     private var adapter: SingleBindingAdapter<Movie>? = null
 

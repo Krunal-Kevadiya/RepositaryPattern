@@ -10,13 +10,16 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
 import com.example.ownrepositarypatternsample.BR
 import com.kotlinlibrary.utils.ktx.inflateBindView
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 
 abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel>(
     @LayoutRes val layoutRes: Int
 ) : DialogFragment() {
     protected lateinit var mBinding: VDB
-    protected abstract val mViewModel: BVM
     protected lateinit var mContext: Context
+    protected val mViewModel: BVM by viewModel(viewModelClass())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,4 +69,9 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel>(
     }
 
     open fun initObserve() {}
+
+    @Suppress("UNCHECKED_CAST")
+    private fun viewModelClass(): KClass<BVM> {
+        return ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<BVM>).kotlin
+    }
 }

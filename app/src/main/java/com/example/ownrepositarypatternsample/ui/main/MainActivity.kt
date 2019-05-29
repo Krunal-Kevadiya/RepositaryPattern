@@ -11,11 +11,8 @@ import com.example.ownrepositarypatternsample.data.remote.pojo.LoginPojo
 import com.example.ownrepositarypatternsample.databinding.ActivityMainBinding
 import com.kotlinlibrary.utils.arguments.bindArgument
 import devlight.io.library.ntb.NavigationTabBar
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.activity_main) {
-    override val mViewModel: MainViewModel by viewModel()
-
     private val loginDetail by bindArgument<LoginPojo>("login")
 
     override fun initObserve() {

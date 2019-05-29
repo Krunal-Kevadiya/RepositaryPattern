@@ -28,11 +28,8 @@ import com.kotlinlibrary.utils.ktx.applyToolbarMargin
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
 import com.kotlinlibrary.utils.ktx.visible
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel>(R.layout.activity_tv_detail) {
-    override val mViewModel: TvDetailViewModel by viewModel()
-
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
 

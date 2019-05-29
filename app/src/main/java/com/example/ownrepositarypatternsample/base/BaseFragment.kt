@@ -18,14 +18,17 @@ import com.kotlinlibrary.statusbaralert.StatusBarAlertView
 import com.kotlinlibrary.statusbaralert.progressMessage
 import com.kotlinlibrary.utils.ktx.inflateBindView
 import com.kotlinlibrary.utils.ktx.observeLiveData
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 
 abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel>(
     @LayoutRes val layoutRes: Int
 ) : Fragment() {
     protected lateinit var mBinding: VDB
-    protected abstract val mViewModel: BVM
-
     protected lateinit var mContext: Context
+    protected val mViewModel: BVM by viewModel(viewModelClass())
+
     private lateinit var snackBarMsg: Snackbar
     private var statusBarProgress: StatusBarAlertView? = null
 
@@ -71,6 +74,11 @@ abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel>(
     }
 
     open fun initObserve() {}
+
+    @Suppress("UNCHECKED_CAST")
+    private fun viewModelClass(): KClass<BVM> {
+        return ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<BVM>).kotlin
+    }
 
     protected fun showAlertView(isShow: Boolean) {
         if(isShow) {

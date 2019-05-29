@@ -23,11 +23,8 @@ import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>(R.layout.main_fragment_tv) {
-    override val mViewModel: MainViewModel by viewModel()
-
     private var noPaginate: NoPaginate? = null
     private var adapter: SingleBindingAdapter<Tv>? = null
 

@@ -18,11 +18,8 @@ import com.example.ownrepositarypatternsample.databinding.ItemPersonBinding
 import com.example.ownrepositarypatternsample.databinding.MainFragmentStarBinding
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>(R.layout.main_fragment_star) {
-    override val mViewModel: MainViewModel by viewModel()
-
     private var noPaginate: NoPaginate? = null
     private var adapter: SingleBindingAdapter<People>? = null
 

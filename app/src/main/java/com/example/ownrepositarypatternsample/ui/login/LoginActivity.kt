@@ -8,11 +8,8 @@ import com.example.ownrepositarypatternsample.databinding.ActivityLoginBinding
 import com.example.ownrepositarypatternsample.ui.main.MainActivity
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LoginActivity : BaseActivity<ActivityLoginBinding, LoginViewModel>(R.layout.activity_login) {
-    override val mViewModel: LoginViewModel by viewModel()
-
     override fun initObserve() {
         super.initObserve()
         observeLiveData(mViewModel.getScreenStateObservable()) { screenState(it) }

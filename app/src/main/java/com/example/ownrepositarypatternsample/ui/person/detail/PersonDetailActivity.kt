@@ -27,11 +27,8 @@ import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.toApi
 import com.kotlinlibrary.utils.ktx.visible
 import com.kotlinlibrary.utils.navigate.launchActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDetailViewModel>(R.layout.activity_person_detail) {
-    override val mViewModel: PersonDetailViewModel by viewModel()
-
     override fun initObserve() {
         observeLiveData(mViewModel.getPersonObservable()) { updatePersonDetail(it) }
     }

@@ -75,8 +75,8 @@ dependencies {
     kapt "androidx.room:room-compiler:2.1.0-beta01"
 
     // dependency injection
-    implementation "org.koin:koin-android:2.0.0-GA6"
-    implementation "org.koin:koin-androidx-viewmodel:2.0.0-GA6"
+    implementation "org.koin:koin-android:2.0.1"
+    implementation "org.koin:koin-androidx-viewmodel:2.0.1"
 
     // network
     implementation "com.squareup.retrofit2:retrofit:2.5.0"

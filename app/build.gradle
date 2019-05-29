@@ -90,13 +90,8 @@ dependencies {
     implementation "com.github.florent37:glidepalette:2.1.2"
     kapt "com.github.bumptech.glide:compiler:4.9.0"
 
-    // adapter
-    implementation "com.github.skydoves:baserecyclerviewadapter:0.1.1"
-
     // debugging
     implementation "com.jakewharton.timber:timber:4.7.1"
-    implementation 'com.facebook.stetho:stetho:1.5.1'
-    implementation 'com.facebook.stetho:stetho-okhttp3:1.5.1'
 
     // custom view
     implementation "devlight.io:navigationtabbar:1.2.5"

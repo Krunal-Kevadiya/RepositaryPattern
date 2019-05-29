@@ -5,7 +5,6 @@ import com.example.ownrepositarypatternsample.di.modul.*
 import com.example.ownrepositarypatternsample.di.modul.http.apiModule
 import com.example.ownrepositarypatternsample.di.modul.http.networkModule
 import com.example.ownrepositarypatternsample.di.modul.http.okHttpClientModule
-import com.facebook.stetho.Stetho
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -18,7 +17,6 @@ class TheApplication : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-        Stetho.initializeWithDefaults(this)
 
         startKoin {
             androidLogger()

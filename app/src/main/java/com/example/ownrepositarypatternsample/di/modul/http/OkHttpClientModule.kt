@@ -4,9 +4,7 @@ import android.content.Context
 import com.example.ownrepositarypatternsample.di.interceptor.ConnectivityInterceptor
 import com.example.ownrepositarypatternsample.di.interceptor.RequestInterceptor
 import com.example.ownrepositarypatternsample.di.modul.Property
-import com.facebook.stetho.okhttp3.StethoInterceptor
 import okhttp3.Cache
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module

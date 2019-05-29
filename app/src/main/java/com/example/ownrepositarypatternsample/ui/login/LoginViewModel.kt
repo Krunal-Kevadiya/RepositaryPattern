@@ -5,30 +5,30 @@ import com.example.ownrepositarypatternsample.R
 import com.example.ownrepositarypatternsample.base.BaseViewModel
 import com.example.ownrepositarypatternsample.base.repository.ScreenState
 import com.example.ownrepositarypatternsample.data.remote.pojo.LoginPojo
-import com.kotlinlibrary.validation.ValidatedObservableField
+import com.kotlinlibrary.validation.bindValidator
 
 class LoginViewModel: BaseViewModel() {
     private var screenStateLiveData: MutableLiveData<ScreenState<LoginPojo>> = MutableLiveData()
 
-    val voFirstName: ValidatedObservableField<Int> = ValidatedObservableField<Int>("", false)
+    val voFirstName = bindValidator<Int>("", false)
         .nonEmpty(R.string.vld_first_name_empty)
-        .minLength(R.string.vld_first_name_more_than_3)
+        .minLength(3, R.string.vld_first_name_more_than_3)
         .addErrorCallback {
             it?.let { error ->
                 screenStateLiveData.value = ScreenState.ErrorState.Validation(error)
             }
         }
 
-    val voLastName: ValidatedObservableField<Int> = ValidatedObservableField<Int>("", false)
+    val voLastName = bindValidator<Int>("", false)
         .nonEmpty(R.string.vld_last_name_empty)
-        .minLength(R.string.vld_last_name_more_than_3)
+        .minLength(3, R.string.vld_last_name_more_than_3)
         .addErrorCallback {
             it?.let { error ->
                 screenStateLiveData.value = ScreenState.ErrorState.Validation(error)
             }
         }
 
-    val voEmail: ValidatedObservableField<Int> = ValidatedObservableField<Int>("", false)
+    val voEmail = bindValidator<Int>("", false)
         .nonEmpty(R.string.vld_email_address_empty)
         .validEmail(R.string.vld_invalid_email_address)
         .addErrorCallback {
@@ -37,7 +37,7 @@ class LoginViewModel: BaseViewModel() {
             }
         }
 
-    val voPassword: ValidatedObservableField<Int> = ValidatedObservableField<Int>("", false)
+    val voPassword = bindValidator<Int>("", false)
         .nonEmpty(R.string.vld_password_empty)
         .regex(".*[A-Z]+.*", R.string.vld_password_contain_capital_letter)
         .regex(".*[0-9]+.*", R.string.vld_password_contain_digits)

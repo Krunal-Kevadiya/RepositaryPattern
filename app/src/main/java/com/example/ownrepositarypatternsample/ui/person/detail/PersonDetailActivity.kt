@@ -22,6 +22,7 @@ import com.example.ownrepositarypatternsample.data.Api
 import com.example.ownrepositarypatternsample.data.local.entity.People
 import com.example.ownrepositarypatternsample.data.remote.response.PersonDetail
 import com.example.ownrepositarypatternsample.databinding.ActivityPersonDetailBinding
+import com.kotlinlibrary.utils.arguments.bindArgument
 import com.kotlinlibrary.utils.ktx.fromApi
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.toApi
@@ -29,6 +30,9 @@ import com.kotlinlibrary.utils.ktx.visible
 import com.kotlinlibrary.utils.navigate.launchActivity
 
 class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDetailViewModel>(R.layout.activity_person_detail) {
+
+    private val people: People by bindArgument("person")
+
     override fun initObserve() {
         observeLiveData(mViewModel.getPersonObservable()) { updatePersonDetail(it) }
     }
@@ -41,8 +45,8 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
 
     private fun initializeUI() {
         mBinding.incTool.toolbarHome.setOnClickListener { onBackPressed() }
-        mBinding.incTool.toolbarTitle.text = getPersonFromIntent().name
-        getPersonFromIntent().profilePath?.let {
+        mBinding.incTool.toolbarTitle.text = people.name
+        people.profilePath?.let {
             Glide.with(this).load(Api.getPosterPath(it))
                     .apply(RequestOptions().circleCrop())
                     .listener(object: RequestListener<Drawable> {
@@ -60,8 +64,8 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
                     })
                     .into(mBinding.personDetailProfile)
         }
-        mBinding.personDetailName.text = getPersonFromIntent().name
-        mViewModel.postPersonId(getPersonFromIntent().id)
+        mBinding.personDetailName.text = people.name
+        mViewModel.postPersonId(people.id)
     }
 
     private fun updatePersonDetail(resource: ScreenState<PersonDetail>) {
@@ -85,11 +89,8 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
-    }
-
-    private fun getPersonFromIntent(): People {
-        return intent.getParcelableExtra("person") as People
     }
 
     companion object {
@@ -106,7 +107,7 @@ class PersonDetailActivity : BaseActivity<ActivityPersonDetailBinding, PersonDet
             }
             toApi(Build.VERSION_CODES.LOLLIPOP) {
                 activity.launchActivity<PersonDetailActivity>(
-                    params = *arrayOf("person" to people), resultCode = INTENT_REQUEST_CODE
+                    params = arrayOf("person" to people), resultCode = INTENT_REQUEST_CODE
                 )
             }
         }

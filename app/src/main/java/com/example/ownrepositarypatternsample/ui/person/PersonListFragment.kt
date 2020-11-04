@@ -1,5 +1,6 @@
 package com.example.ownrepositarypatternsample.ui.person
 
+import android.annotation.SuppressLint
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.ownrepositarypatternsample.BR
 import com.example.ownrepositarypatternsample.R
@@ -38,13 +39,14 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>(R
             onClick(R.id.item_person_profile) { view, _, item ->
                 activity?.let { act ->
                     PersonDetailActivity.startActivity(this@PersonListFragment, act, item, view)
-                } ?: mContext.launchActivity<PersonDetailActivity>(params = *arrayOf("person" to item))
+                } ?: mContext.launchActivity<PersonDetailActivity>(params = arrayOf("person" to item))
             }
             withItems(mutableListOf())
         }
         setupLoadMore()
     }
 
+    @SuppressLint("Range")
     private fun setupLoadMore() {
         noPaginate = NoPaginate {
             loadingTriggerThreshold = 0
@@ -56,6 +58,7 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>(R
                 mViewModel.postPeoplePage()
             }
         }
+        mViewModel.postPeoplePage()
     }
 
     override fun onDestroy() {
@@ -90,6 +93,7 @@ class PersonListFragment: BaseFragment<MainFragmentStarBinding, MainViewModel>(R
                 noPaginate?.showError(true)
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 }

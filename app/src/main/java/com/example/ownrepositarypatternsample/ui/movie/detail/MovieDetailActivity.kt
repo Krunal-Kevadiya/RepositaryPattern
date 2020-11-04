@@ -24,6 +24,7 @@ import com.github.florent37.glidepalette.BitmapPalette
 import com.github.florent37.glidepalette.GlidePalette
 import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
+import com.kotlinlibrary.utils.arguments.bindArgument
 import com.kotlinlibrary.utils.ktx.applyToolbarMargin
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
@@ -33,15 +34,17 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
 
+    private val movie: Movie by bindArgument("movie")
+
     override fun initObserve() {
         observeLiveData(mViewModel.getKeywordListObservable()) { updateKeywordList(it) }
-        mViewModel.postKeywordId(getMovieFromIntent().id)
+        mViewModel.postKeywordId(movie.id)
 
         observeLiveData(mViewModel.getVideoListObservable()) { updateVideoList(it) }
-        mViewModel.postVideoId(getMovieFromIntent().id)
+        mViewModel.postVideoId(movie.id)
 
         observeLiveData(mViewModel.getReviewListObservable()) { updateReviewList(it) }
-        mViewModel.postReviewId(getMovieFromIntent().id)
+        mViewModel.postReviewId(movie.id)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -51,20 +54,20 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
 
     private fun initializeUI() {
         applyToolbarMargin(mBinding.movieDetailToolbar)
-        simpleToolbarWithHome(mBinding.movieDetailToolbar, getMovieFromIntent().title)
-        getMovieFromIntent().backdropPath?.let {
+        simpleToolbarWithHome(mBinding.movieDetailToolbar, movie.title)
+        movie.backdropPath?.let {
             Glide.with(this).load(Api.getBackdropPath(it))
                 .listener(requestGlideListener(mBinding.movieDetailPoster))
                 .into(mBinding.movieDetailPoster)
         } ?: let {
-            Glide.with(this).load(Api.getBackdropPath(getMovieFromIntent().posterPath!!))
+            Glide.with(this).load(Api.getBackdropPath(movie.posterPath!!))
                 .listener(requestGlideListener(mBinding.movieDetailPoster))
                 .into(mBinding.movieDetailPoster)
         }
-        mBinding.incHeader.detailHeaderTitle.text = getMovieFromIntent().title
-        mBinding.incHeader.detailHeaderRelease.text = "Release Date : ${getMovieFromIntent().releaseDate}"
-        mBinding.incHeader.detailHeaderStar.rating = getMovieFromIntent().voteAverage / 2
-        mBinding.incBody.detailBodySummary.text = getMovieFromIntent().overview
+        mBinding.incHeader.detailHeaderTitle.text = movie.title
+        mBinding.incHeader.detailHeaderRelease.text = "Release Date : ${movie.releaseDate}"
+        mBinding.incHeader.detailHeaderStar.rating = movie.voteAverage / 2
+        mBinding.incBody.detailBodySummary.text = movie.overview
 
         videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
             withLayoutManager(LinearLayoutManager(this@MovieDetailActivity, LinearLayoutManager.HORIZONTAL, false))
@@ -122,6 +125,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 
@@ -144,6 +148,7 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 
@@ -166,15 +171,12 @@ class MovieDetailActivity : BaseActivity<ActivityMovieDetailBinding, MovieDetail
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 
-    private fun getMovieFromIntent(): Movie {
-        return intent.getParcelableExtra("movie") as Movie
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if (item?.itemId == android.R.id.home) onBackPressed()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) onBackPressed()
         return false
     }
 }

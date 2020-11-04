@@ -17,6 +17,7 @@ import com.kotlinlibrary.statusbaralert.StatusBarAlert
 import com.kotlinlibrary.statusbaralert.StatusBarAlertView
 import com.kotlinlibrary.statusbaralert.progressMessage
 import com.kotlinlibrary.utils.ktx.inflateBindView
+import com.kotlinlibrary.utils.ktx.logs
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.lang.reflect.ParameterizedType
@@ -77,7 +78,7 @@ abstract class BaseFragment<VDB : ViewDataBinding, BVM : BaseViewModel>(
 
     @Suppress("UNCHECKED_CAST")
     private fun viewModelClass(): KClass<BVM> {
-        return ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<BVM>).kotlin
+        return ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[1] as Class<BVM>).kotlin
     }
 
     protected fun showAlertView(isShow: Boolean) {

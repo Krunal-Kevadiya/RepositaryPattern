@@ -1,5 +1,6 @@
 package com.example.ownrepositarypatternsample.ui.tv
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
@@ -51,13 +52,14 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>(R.layou
                 }
             }
             onClick { _, _, item ->
-                (mContext as Activity).launchActivity<TvDetailActivity>(params = *arrayOf("tv" to item))
+                (mContext as Activity).launchActivity<TvDetailActivity>(params = arrayOf("tv" to item))
             }
             withItems(mutableListOf())
         }
         setupLoadMore()
     }
 
+    @SuppressLint("Range")
     private fun setupLoadMore() {
         noPaginate = NoPaginate {
             loadingTriggerThreshold = 0
@@ -69,6 +71,7 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>(R.layou
                 mViewModel.postTvPage()
             }
         }
+        mViewModel.postTvPage()
     }
 
     override fun onDestroy() {
@@ -103,6 +106,7 @@ class TvListFragment: BaseFragment<MainFragmentTvBinding, MainViewModel>(R.layou
                 noPaginate?.showError(true)
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 }

@@ -24,6 +24,7 @@ import com.github.florent37.glidepalette.BitmapPalette
 import com.github.florent37.glidepalette.GlidePalette
 import com.kotlinlibrary.recycleradapter.setUpBinding
 import com.kotlinlibrary.recycleradapter.simple.SingleBindingAdapter
+import com.kotlinlibrary.utils.arguments.bindArgument
 import com.kotlinlibrary.utils.ktx.applyToolbarMargin
 import com.kotlinlibrary.utils.ktx.observeLiveData
 import com.kotlinlibrary.utils.ktx.simpleToolbarWithHome
@@ -33,15 +34,17 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
     private var videoAdapter: SingleBindingAdapter<Video>? = null
     private var reviewAdapter: SingleBindingAdapter<Review>? = null
 
+    private val tv: Tv by bindArgument("tv")
+
     override fun initObserve() {
         observeLiveData(mViewModel.getKeywordListObservable()) { updateKeywordList(it) }
-        mViewModel.postKeywordId(getTvFromIntent().id)
+        mViewModel.postKeywordId(tv.id)
 
         observeLiveData(mViewModel.getVideoListObservable()) { updateVideoList(it) }
-        mViewModel.postVideoId(getTvFromIntent().id)
+        mViewModel.postVideoId(tv.id)
 
         observeLiveData(mViewModel.getReviewListObservable()) { updateReviewList(it) }
-        mViewModel.postReviewId(getTvFromIntent().id)
+        mViewModel.postReviewId(tv.id)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -51,21 +54,21 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
 
     private fun initializeUI() {
         applyToolbarMargin(mBinding.tvDetailToolbar)
-        simpleToolbarWithHome(mBinding.tvDetailToolbar, getTvFromIntent().name)
-        getTvFromIntent().backdropPath?.let {
+        simpleToolbarWithHome(mBinding.tvDetailToolbar, tv.name)
+        tv.backdropPath?.let {
             Glide.with(this).load(Api.getBackdropPath(it))
                     .listener(requestGlideListener(mBinding.tvDetailPoster))
                     .into(mBinding.tvDetailPoster)
         } ?: let {
-            Glide.with(this).load(Api.getBackdropPath(getTvFromIntent().posterPath!!))
+            Glide.with(this).load(Api.getBackdropPath(tv.posterPath!!))
                     .listener(requestGlideListener(mBinding.tvDetailPoster))
                     .into(mBinding.tvDetailPoster)
         }
 
-        mBinding.incHeader.detailHeaderTitle.text = getTvFromIntent().name
-        mBinding.incHeader.detailHeaderRelease.text = "First Air Date : ${getTvFromIntent().firstAirDate}"
-        mBinding.incHeader.detailHeaderStar.rating = getTvFromIntent().voteAverage / 2
-        mBinding.incBody.detailBodySummary.text = getTvFromIntent().overview
+        mBinding.incHeader.detailHeaderTitle.text = tv.name
+        mBinding.incHeader.detailHeaderRelease.text = "First Air Date : ${tv.firstAirDate}"
+        mBinding.incHeader.detailHeaderStar.rating = tv.voteAverage / 2
+        mBinding.incBody.detailBodySummary.text = tv.overview
 
         videoAdapter = mBinding.incBody.detailBodyRecyclerViewTrailers.setUpBinding<Video> {
             withLayoutManager(LinearLayoutManager(this@TvDetailActivity, LinearLayoutManager.HORIZONTAL, false))
@@ -123,6 +126,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 
@@ -145,6 +149,7 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 
@@ -167,15 +172,12 @@ class TvDetailActivity : BaseActivity<ActivityTvDetailBinding, TvDetailViewModel
             is ScreenState.ErrorState.Api -> {
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 
-    private fun getTvFromIntent(): Tv {
-        return intent.getParcelableExtra("tv") as Tv
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if(item?.itemId == android.R.id.home) onBackPressed()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == android.R.id.home) onBackPressed()
         return false
     }
 }

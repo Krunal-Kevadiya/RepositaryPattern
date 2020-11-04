@@ -72,6 +72,6 @@ abstract class BaseDialog<VDB : ViewDataBinding, BVM : BaseViewModel>(
 
     @Suppress("UNCHECKED_CAST")
     private fun viewModelClass(): KClass<BVM> {
-        return ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<BVM>).kotlin
+        return ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[1] as Class<BVM>).kotlin
     }
 }

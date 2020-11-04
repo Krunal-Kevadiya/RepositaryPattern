@@ -7,7 +7,6 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.ownrepositarypatternsample.data.remote.pojo.ErrorEnvelope
 import com.kotlinlibrary.retrofitadapter.SealedApiResult
-import com.kotlinlibrary.utils.ktx.logs
 import kotlinx.coroutines.*
 
 abstract class NetworkBoundRepository<ResultType, RequestType> constructor(
@@ -92,10 +91,8 @@ abstract class NetworkBoundRepository<ResultType, RequestType> constructor(
         addProgress()
         ioScope.launch {
             val loadedFromDB = loadFromDb().toLiveData()
-            logs("loadedFromDB = ${loadedFromDB.value}")
             withContext(Dispatchers.Main) {
                 result.addSources(loadedFromDB) { response ->
-                    logs("response = $response")
                     addSuccess(response, false)
                     fetchFromServerAndCached()
                 }

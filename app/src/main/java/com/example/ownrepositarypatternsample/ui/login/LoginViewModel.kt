@@ -43,7 +43,7 @@ class LoginViewModel: BaseViewModel() {
         .regex(".*[0-9]+.*", R.string.vld_password_contain_digits)
         .regex(".*[a-z]+.*", R.string.vld_password_contain_small_letter)
         .minLength(8, R.string.vld_password_more_than_eight)
-        .maxLength(16, R.string.vld_password_less_than_sixteen)
+        .maxLengths(16, R.string.vld_password_less_than_sixteen)
         .addErrorCallback {
             it?.let { error ->
                 screenStateLiveData.value = ScreenState.ErrorState.Validation(error)

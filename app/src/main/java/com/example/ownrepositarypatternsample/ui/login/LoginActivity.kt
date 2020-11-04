@@ -22,9 +22,18 @@ class LoginActivity : BaseActivity<ActivityLoginBinding, LoginViewModel>(R.layou
             }
             is ScreenState.SuccessState.Validation -> {
                 resource.request?.let { bean ->
-                    launchActivity<MainActivity>(finishCurrent = true, params = *arrayOf("login" to bean))
+                    launchActivity<MainActivity>(finishCurrent = true, params = arrayOf("login" to bean))
                 }
             }
+            else -> {}
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mViewModel.voFirstName.setValue("Krunal")
+        mViewModel.voLastName.setValue("Kevadiya")
+        mViewModel.voEmail.setValue("krunal.k@simformsolutions.com")
+        mViewModel.voPassword.setValue("Krunal@3022")
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ownrepositarypatternsample.ui.movie
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
@@ -51,13 +52,14 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
                 }
             }
             onClick { _, _, item ->
-                (mContext as Activity).launchActivity<MovieDetailActivity>(params = *arrayOf("movie" to item))
+                (mContext as Activity).launchActivity<MovieDetailActivity>(params = arrayOf("movie" to item))
             }
             withItems(mutableListOf())
         }
         setupLoadMore()
     }
 
+    @SuppressLint("Range")
     private fun setupLoadMore() {
         noPaginate = NoPaginate {
             loadingTriggerThreshold = 0
@@ -69,6 +71,7 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
                 mViewModel.postMoviePage()
             }
         }
+        mViewModel.postMoviePage()
     }
 
     override fun onDestroy() {
@@ -103,6 +106,7 @@ class MovieListFragment : BaseFragment<MainFragmentMovieBinding, MainViewModel>(
                 noPaginate?.showError(true)
                 mViewModel.message.postValue(resource.message)
             }
+            else -> {}
         }
     }
 }
